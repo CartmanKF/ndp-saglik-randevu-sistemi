@@ -1,0 +1,8 @@
+{
+  "name": "saglik-randevu-sistemi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nesneye dayalı programlama dersi hastane ve klinik randevu sistemi",
+  "scripts": { "test": "node --test tests/domain.test.js" },
+  "engines": { "node": ">=18" }
+}

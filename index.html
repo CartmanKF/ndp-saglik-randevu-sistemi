@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sağlık Randevu Sistemi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Nesneye Dayalı Programlama Projesi</p>
+      <h1>Sağlık Randevu Sistemi</h1>
+    </div>
+    <label class="role-picker">Aktif rol
+      <select id="roleSelect">
+        <option value="patient">Hasta</option>
+        <option value="doctor">Doktor</option>
+        <option value="admin">Klinik Yöneticisi</option>
+      </select>
+    </label>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Bugünün görünümü</p>
+        <h2 id="welcomeTitle">Randevularınızı kolayca yönetin</h2>
+        <p id="welcomeText">Uygun doktoru ve hizmeti seçip yeni bir randevu oluşturabilirsiniz.</p>
+      </div>
+      <button id="resetButton" class="ghost danger">Örnek verileri sıfırla</button>
+    </section>
+
+    <section id="stats" class="stats" aria-label="Sistem özeti"></section>
+
+    <section class="panel patient-only">
+      <div class="section-title">
+        <div><p class="eyebrow">Hasta işlemleri</p><h2>Yeni randevu</h2></div>
+      </div>
+      <form id="appointmentForm" class="form-grid">
+        <label>Hasta adı<input id="patientName" required minlength="3" placeholder="Ad Soyad"></label>
+        <label>Klinik<select id="clinicSelect" required></select></label>
+        <label>Hizmet<select id="serviceSelect" required></select></label>
+        <label>Doktor<select id="doctorSelect" required></select></label>
+        <label>Tarih<input id="dateInput" type="date" required></label>
+        <label>Saat<input id="timeInput" type="time" step="900" required></label>
+        <button type="submit" class="primary">Randevu oluştur</button>
+      </form>
+      <p id="formMessage" class="message" role="status"></p>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <div><p class="eyebrow">Takvim</p><h2>Randevular</h2></div>
+        <label>Durum filtresi
+          <select id="statusFilter">
+            <option value="ALL">Tümü</option>
+            <option value="PENDING">Onay bekliyor</option>
+            <option value="APPROVED">Onaylandı</option>
+            <option value="CANCELLED">İptal edildi</option>
+          </select>
+        </label>
+      </div>
+      <div id="appointmentList" class="appointment-list"></div>
+    </section>
+
+    <section class="panel admin-only hidden">
+      <div class="section-title"><div><p class="eyebrow">Kurum bilgileri</p><h2>Klinikler ve hizmetler</h2></div></div>
+      <div id="clinicList" class="cards"></div>
+    </section>
+
+    <section class="panel admin-only hidden">
+      <div class="section-title"><div><p class="eyebrow">Çalışan yönetimi</p><h2>Doktorlar ve uygunluk</h2></div></div>
+      <div id="doctorList" class="cards"></div>
+    </section>
+  </main>
+
+  <template id="emptyTemplate"><div class="empty">Bu filtreye uygun kayıt bulunamadı.</div></template>
+  <script src="js/domain.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
