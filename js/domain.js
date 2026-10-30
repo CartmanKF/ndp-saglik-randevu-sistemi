@@ -87,28 +87,68 @@
   }
 
   class AppointmentService {
-    constructor(store) {
+    constructor(store, clock = () => new Date()) {
       this.store = store;
+      this.clock = clock;
     }
 
-    create({ patientName, clinicId, serviceId, doctorId, date, time }) {
+    getAvailableSlots({ clinicId, serviceId, doctorId, date }) {
+      const { service, doctor } = this.resolveSelection(clinicId, serviceId, doctorId);
+      const selectedDate = new Date(`${date}T00:00:00`);
+      if (!date || Number.isNaN(selectedDate.getTime())) throw new Error("Geçerli bir tarih seçin.");
+
+      const ranges = doctor.availability[String(selectedDate.getDay())] || [];
+      const now = new Date(this.clock());
+      const slots = [];
+
+      ranges.forEach(range => {
+        const [from, to] = range.split("-").map(Doctor.toMinute);
+        for (let minute = from; minute + service.durationMinutes <= to; minute += 15) {
+          const time = AppointmentService.formatMinute(minute);
+          const start = new Date(`${date}T${time}:00`);
+          if (start <= now || this.hasConflict(doctorId, start, service.durationMinutes)) continue;
+          slots.push(time);
+        }
+      });
+
+      return slots;
+    }
+
+    resolveSelection(clinicId, serviceId, doctorId) {
       const service = this.store.getService(serviceId);
       const doctor = this.store.getDoctor(doctorId);
       const clinic = this.store.getClinic(clinicId);
-      if (!patientName || !service || !doctor || !clinic) throw new Error("Tüm randevu bilgileri eksiksiz seçilmelidir.");
+      if (!service || !doctor || !clinic) throw new Error("Klinik, hizmet ve doktor eksiksiz seçilmelidir.");
       if (service.clinicId !== clinicId || doctor.clinicId !== clinicId || !doctor.canProvide(serviceId)) {
         throw new Error("Seçilen doktor bu hizmeti ilgili klinikte sunmuyor.");
       }
+      return { service, doctor, clinic };
+    }
+
+    hasConflict(doctorId, start, durationMinutes) {
+      return this.store.getAppointments().some(item =>
+        item.doctorId === doctorId && item.overlaps(start, durationMinutes)
+      );
+    }
+
+    static formatMinute(total) {
+      const hour = String(Math.floor(total / 60)).padStart(2, "0");
+      const minute = String(total % 60).padStart(2, "0");
+      return `${hour}:${minute}`;
+    }
+
+    create({ patientName, clinicId, serviceId, doctorId, date, time }) {
+      const normalizedPatientName = patientName ? patientName.trim() : "";
+      if (normalizedPatientName.length < 3) throw new Error("Hasta adı en az 3 karakter olmalıdır.");
+      const { service, doctor } = this.resolveSelection(clinicId, serviceId, doctorId);
       const start = new Date(`${date}T${time}:00`);
       if (Number.isNaN(start.getTime())) throw new Error("Geçerli bir tarih ve saat seçin.");
+      if (start <= new Date(this.clock())) throw new Error("Geçmiş bir tarih veya saat için randevu oluşturulamaz.");
       if (!doctor.isAvailable(start, service.durationMinutes)) throw new Error("Doktor seçilen zaman aralığında uygun değil.");
-      const conflict = this.store.getAppointments().some(item =>
-        item.doctorId === doctorId && item.overlaps(start, service.durationMinutes)
-      );
-      if (conflict) throw new Error("Bu zaman aralığında doktorun başka bir randevusu var.");
+      if (this.hasConflict(doctorId, start, service.durationMinutes)) throw new Error("Bu zaman aralığında doktorun başka bir randevusu var.");
 
       const appointment = new Appointment({
-        id: this.store.nextId("appointment"), patientName: patientName.trim(), clinicId, serviceId, doctorId,
+        id: this.store.nextId("appointment"), patientName: normalizedPatientName, clinicId, serviceId, doctorId,
         start: start.toISOString(), durationMinutes: service.durationMinutes, fee: service.fee,
         createdAt: new Date().toISOString()
       });

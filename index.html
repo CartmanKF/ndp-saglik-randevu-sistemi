@@ -43,7 +43,11 @@
         <label>Hizmet<select id="serviceSelect" required></select></label>
         <label>Doktor<select id="doctorSelect" required></select></label>
         <label>Tarih<input id="dateInput" type="date" required></label>
-        <label>Saat<input id="timeInput" type="time" step="900" required></label>
+        <label>Saat
+          <select id="timeInput" required disabled>
+            <option value="">Önce tarih ve doktor seçin</option>
+          </select>
+        </label>
         <button type="submit" class="primary">Randevu oluştur</button>
       </form>
       <p id="formMessage" class="message" role="status"></p>

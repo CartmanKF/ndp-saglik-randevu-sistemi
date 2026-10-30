@@ -11,6 +11,8 @@ Uygulamanın amacı farklı kliniklerde sunulan sağlık hizmetleri için doktor
 - Hizmetlerin adı, bölümü, süresi ve ücreti saklanmalıdır.
 - Doktorların uzmanlığı, çalıştığı klinik, sunduğu hizmetler ve uygunluk saatleri tanımlanmalıdır.
 - Hasta uygun klinik, hizmet, doktor, tarih ve saat seçerek randevu oluşturabilmelidir.
+- Sistem doktor takvimi, hizmet süresi ve mevcut randevulara göre uygun saatleri otomatik üretmelidir.
+- Geçmiş tarih ve saatler randevu seçeneği olarak sunulmamalıdır.
 - Aynı doktor için zaman çakışması engellenmelidir.
 - Doktor veya yönetici bekleyen randevuyu onaylayabilmeli ya da iptal edebilmelidir.
 
@@ -45,13 +47,15 @@ classDiagram
 1. Hasta rolü seçilir.
 2. Hasta adı, klinik ve hizmet bilgisi girilir.
 3. Sistem yalnızca seçilen hizmeti sunan doktorları listeler.
-4. Tarih ve saat seçildiğinde doktor uygunluğu kontrol edilir.
-5. Çakışma yoksa ücret ve süre bilgisiyle bekleyen randevu oluşturulur.
-6. Doktor rolüne geçilerek randevu onaylanır veya iptal edilir.
+4. Tarih seçildiğinde doktorun çalışma aralıkları 15 dakikalık başlangıç seçeneklerine dönüştürülür.
+5. Hizmet süresini aşan, geçmişte kalan veya mevcut kayıtlarla çakışan saatler listeden çıkarılır.
+6. Hasta yalnızca kalan uygun saatlerden birini seçer.
+7. Çakışma yoksa ücret ve süre bilgisiyle bekleyen randevu oluşturulur.
+8. Doktor rolüne geçilerek randevu onaylanır veya iptal edilir.
 
 ## 6 Test yaklaşımı
 
-Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan zamanın reddedilmesini, aynı zaman aralığındaki çakışmayı, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
+Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
 
 ## 7 Geliştirme önerileri
 

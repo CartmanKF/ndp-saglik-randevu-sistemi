@@ -52,6 +52,33 @@
     const serviceId = $("serviceSelect").value;
     const list = store.getDoctors().filter(x => x.clinicId === clinicId && (!serviceId || x.canProvide(serviceId)));
     $("doctorSelect").innerHTML = `<option value="">Doktor seçin</option>` + list.map(x => option(x.id, `${x.name} · ${x.specialty}`)).join("");
+    syncTimeSlots();
+  }
+
+  function syncTimeSlots() {
+    const select = $("timeInput");
+    const request = {
+      clinicId: $("clinicSelect").value,
+      serviceId: $("serviceSelect").value,
+      doctorId: $("doctorSelect").value,
+      date: $("dateInput").value
+    };
+    if (Object.values(request).some(value => !value)) {
+      select.innerHTML = `<option value="">Önce tarih ve doktor seçin</option>`;
+      select.disabled = true;
+      return;
+    }
+    try {
+      const slots = appointments.getAvailableSlots(request);
+      select.innerHTML = slots.length
+        ? `<option value="">Uygun saat seçin</option>` + slots.map(time => option(time, time)).join("")
+        : `<option value="">Bu tarihte uygun saat bulunamadı</option>`;
+      select.disabled = slots.length === 0;
+    } catch (error) {
+      select.innerHTML = `<option value="">Uygun saatler yüklenemedi</option>`;
+      select.disabled = true;
+      showMessage(error.message, "error");
+    }
   }
 
   function renderAppointments() {
@@ -97,6 +124,7 @@
       showMessage("Randevu oluşturuldu ve onaya gönderildi.");
       event.target.reset();
       renderSelects();
+      $("dateInput").min = new Date().toLocaleDateString("sv-SE");
       renderStats();
       renderAppointments();
     } catch (error) { showMessage(error.message, "error"); }
@@ -112,8 +140,17 @@
   $("statusFilter").addEventListener("change", renderAppointments);
   $("clinicSelect").addEventListener("change", syncServices);
   $("serviceSelect").addEventListener("change", syncDoctors);
+  $("doctorSelect").addEventListener("change", syncTimeSlots);
+  $("dateInput").addEventListener("change", syncTimeSlots);
   $("resetButton").addEventListener("click", () => { if (confirm("Tüm randevular silinip örnek veriler yüklensin mi?")) { store.reset(); renderAll(); } });
 
-  function renderAll() { renderStats(); renderSelects(); renderAppointments(); renderAdminData(); renderRole(); }
+  function renderAll() {
+    $("dateInput").min = new Date().toLocaleDateString("sv-SE");
+    renderStats();
+    renderSelects();
+    renderAppointments();
+    renderAdminData();
+    renderRole();
+  }
   renderAll();
 })();

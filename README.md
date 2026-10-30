@@ -19,6 +19,8 @@ Ardından `http://localhost:8000` adresine gidilir.
 - Doktor, uzmanlık, sunduğu hizmetler ve haftalık uygunluk tanımı
 - Hasta, doktor ve klinik yöneticisi rolleri
 - Doktorun uygunluk aralığı ve randevu çakışması kontrolü
+- Doktor takvimi, hizmet süresi ve mevcut kayıtlar üzerinden otomatik uygun saat seçenekleri
+- Geçmiş tarih ve saatler için randevu oluşturmayı engelleme
 - Bekleyen, onaylanan ve iptal edilen randevu durumları
 - Randevu detaylarının tarayıcıda kalıcı olarak saklanması
 - Mobil ekrana uyumlu arayüz
@@ -31,7 +33,7 @@ Node.js 18 veya daha yeni bir sürümle:
 npm test
 ```
 
-Testler; randevu oluşturma, uygunluk, çakışma, iptal sonrası saatin tekrar kullanılması ve onay akışını kapsar.
+Testler; randevu oluşturma, uygunluk, otomatik saat üretimi, geçmiş zaman kontrolü, çakışma, iptal sonrası saatin tekrar kullanılması ve onay akışını kapsar.
 
 ## Nesneye dayalı yapı
 

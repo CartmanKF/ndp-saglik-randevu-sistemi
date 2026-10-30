@@ -7,7 +7,8 @@ const { MemoryStore, seed } = require("../js/storage.js");
 
 function setup() {
   const store = new MemoryStore(seed);
-  return { store, service: new D.AppointmentService(store) };
+  const clock = () => new Date("2026-10-30T08:00:00");
+  return { store, service: new D.AppointmentService(store, clock) };
 }
 
 test("uygun zaman aralığında randevu oluşturur", () => {
@@ -43,4 +44,33 @@ test("bekleyen randevuyu onaylar", () => {
   const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
   service.changeStatus(item.id, D.AppointmentStatus.APPROVED);
   assert.equal(item.status, D.AppointmentStatus.APPROVED);
+});
+
+test("doktor uygunluğuna göre 15 dakikalık saat seçenekleri üretir", () => {
+  const { service } = setup();
+  const slots = service.getAvailableSlots({ clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02" });
+  assert.equal(slots[0], "09:00");
+  assert.ok(slots.includes("11:30"));
+  assert.ok(slots.includes("16:30"));
+  assert.ok(!slots.includes("12:00"));
+});
+
+test("dolu zaman aralığıyla çakışan saat seçeneklerini listeden çıkarır", () => {
+  const { service } = setup();
+  service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  const slots = service.getAvailableSlots({ clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02" });
+  assert.ok(!slots.includes("09:00"));
+  assert.ok(!slots.includes("09:15"));
+  assert.ok(slots.includes("09:30"));
+});
+
+test("geçmiş tarih için randevu oluşturmayı reddeder", () => {
+  const { service } = setup();
+  assert.throws(() => service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-10-26", time: "09:00" }), /Geçmiş/);
+});
+
+test("geçmiş tarihte uygun saat döndürmez", () => {
+  const { service } = setup();
+  const slots = service.getAvailableSlots({ clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-10-26" });
+  assert.deepEqual(slots, []);
 });
