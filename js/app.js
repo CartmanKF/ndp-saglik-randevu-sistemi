@@ -84,11 +84,15 @@
   function renderAppointments() {
     const role = $("roleSelect").value;
     const filter = $("statusFilter").value;
+    const patientName = D.AppointmentService.normalizeName($("patientName").value);
     const list = store.getAppointments()
+      .filter(x => role !== "patient" || D.AppointmentService.normalizeName(x.patientName) === patientName)
       .filter(x => filter === "ALL" || x.status === filter)
       .sort((a, b) => new Date(a.start) - new Date(b.start));
     if (!list.length) {
-      $("appointmentList").innerHTML = $("emptyTemplate").innerHTML;
+      $("appointmentList").innerHTML = role === "patient" && !patientName
+        ? `<div class="empty">Randevularınızı görmek için hasta adınızı girin.</div>`
+        : $("emptyTemplate").innerHTML;
       return;
     }
     $("appointmentList").innerHTML = list.map(item => {
@@ -96,11 +100,15 @@
       const service = store.getService(item.serviceId);
       const doctor = store.getDoctor(item.doctorId);
       const canManage = role !== "patient" && item.status === D.AppointmentStatus.PENDING;
+      const canPatientCancel = role === "patient" && item.status !== D.AppointmentStatus.CANCELLED;
       return `<article class="appointment">
         <div><h3>${item.patientName}</h3><p>${service.name} · ${formatMoney(item.fee)}</p></div>
         <div><strong>${doctor.name}</strong><p>${clinic.name}</p></div>
         <div><span class="badge ${item.status}">${statusLabel[item.status]}</span><p>${formatDate(item.start)} · ${item.durationMinutes} dk</p></div>
-        <div class="actions">${canManage ? `<button class="approve" data-action="APPROVED" data-id="${item.id}">Onayla</button><button class="cancel" data-action="CANCELLED" data-id="${item.id}">İptal</button>` : ""}</div>
+        <div class="actions">
+          ${canManage ? `<button class="approve" data-action="APPROVED" data-id="${item.id}">Onayla</button><button class="cancel" data-action="CANCELLED" data-id="${item.id}">İptal</button>` : ""}
+          ${canPatientCancel ? `<button class="cancel" data-action="PATIENT_CANCEL" data-id="${item.id}">Randevumu iptal et</button>` : ""}
+        </div>
       </article>`;
     }).join("");
   }
@@ -122,7 +130,9 @@
     try {
       appointments.create({ patientName: $("patientName").value, clinicId: $("clinicSelect").value, serviceId: $("serviceSelect").value, doctorId: $("doctorSelect").value, date: $("dateInput").value, time: $("timeInput").value });
       showMessage("Randevu oluşturuldu ve onaya gönderildi.");
+      const patientName = $("patientName").value;
       event.target.reset();
+      $("patientName").value = patientName;
       renderSelects();
       $("dateInput").min = new Date().toLocaleDateString("sv-SE");
       renderStats();
@@ -133,7 +143,12 @@
   $("appointmentList").addEventListener("click", event => {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
-    try { appointments.changeStatus(button.dataset.id, button.dataset.action); renderStats(); renderAppointments(); }
+    try {
+      if (button.dataset.action === "PATIENT_CANCEL") appointments.cancelForPatient(button.dataset.id, $("patientName").value);
+      else appointments.changeStatus(button.dataset.id, button.dataset.action);
+      renderStats();
+      renderAppointments();
+    }
     catch (error) { alert(error.message); }
   });
   $("roleSelect").addEventListener("change", renderRole);
@@ -142,6 +157,7 @@
   $("serviceSelect").addEventListener("change", syncDoctors);
   $("doctorSelect").addEventListener("change", syncTimeSlots);
   $("dateInput").addEventListener("change", syncTimeSlots);
+  $("patientName").addEventListener("input", renderAppointments);
   $("resetButton").addEventListener("click", () => { if (confirm("Tüm randevular silinip örnek veriler yüklensin mi?")) { store.reset(); renderAll(); } });
 
   function renderAll() {

@@ -74,3 +74,17 @@ test("geçmiş tarihte uygun saat döndürmez", () => {
   const slots = service.getAvailableSlots({ clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-10-26" });
   assert.deepEqual(slots, []);
 });
+
+test("hasta kendi adına kayıtlı randevuyu iptal eder", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  service.cancelForPatient(item.id, "  AYŞE DEMİR ");
+  assert.equal(item.status, D.AppointmentStatus.CANCELLED);
+});
+
+test("hasta başka bir hastanın randevusunu iptal edemez", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  assert.throws(() => service.cancelForPatient(item.id, "Mehmet Can"), /yetkiniz yok/);
+  assert.equal(item.status, D.AppointmentStatus.PENDING);
+});

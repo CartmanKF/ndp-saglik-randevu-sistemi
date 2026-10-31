@@ -165,6 +165,23 @@
       this.store.updateAppointment(appointment);
       return appointment;
     }
+
+    cancelForPatient(id, patientName) {
+      const appointment = this.store.getAppointment(id);
+      if (!appointment) throw new Error("Randevu bulunamadı.");
+      const requestedName = AppointmentService.normalizeName(patientName);
+      const ownerName = AppointmentService.normalizeName(appointment.patientName);
+      if (!requestedName || requestedName !== ownerName) {
+        throw new Error("Bu randevuyu iptal etme yetkiniz yok.");
+      }
+      appointment.cancel();
+      this.store.updateAppointment(appointment);
+      return appointment;
+    }
+
+    static normalizeName(value) {
+      return String(value || "").trim().toLocaleLowerCase("tr-TR");
+    }
   }
 
   const exported = { AppointmentStatus, Clinic, HealthService, Employee, Doctor, Appointment, AppointmentService };
