@@ -14,6 +14,7 @@
   function renderRole() {
     const role = $("roleSelect").value;
     document.querySelectorAll(".patient-only").forEach(el => el.classList.toggle("hidden", role !== "patient"));
+    document.querySelectorAll(".doctor-only").forEach(el => el.classList.toggle("hidden", role !== "doctor"));
     document.querySelectorAll(".admin-only").forEach(el => el.classList.toggle("hidden", role !== "admin"));
     const texts = {
       patient: ["Randevularınızı kolayca yönetin", "Uygun doktoru ve hizmeti seçip yeni bir randevu oluşturabilirsiniz."],
@@ -37,6 +38,7 @@
 
   function renderSelects() {
     $("clinicSelect").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
+    $("doctorViewSelect").innerHTML = `<option value="">Doktor seçin</option>` + store.getDoctors().map(x => option(x.id, `${x.name} · ${x.specialty}`)).join("");
     syncServices();
   }
 
@@ -85,21 +87,23 @@
     const role = $("roleSelect").value;
     const filter = $("statusFilter").value;
     const patientName = D.AppointmentService.normalizeName($("patientName").value);
+    const activeDoctorId = $("doctorViewSelect").value;
     const list = store.getAppointments()
       .filter(x => role !== "patient" || D.AppointmentService.normalizeName(x.patientName) === patientName)
+      .filter(x => role !== "doctor" || x.doctorId === activeDoctorId)
       .filter(x => filter === "ALL" || x.status === filter)
       .sort((a, b) => new Date(a.start) - new Date(b.start));
     if (!list.length) {
-      $("appointmentList").innerHTML = role === "patient" && !patientName
-        ? `<div class="empty">Randevularınızı görmek için hasta adınızı girin.</div>`
-        : $("emptyTemplate").innerHTML;
+      if (role === "patient" && !patientName) $("appointmentList").innerHTML = `<div class="empty">Randevularınızı görmek için hasta adınızı girin.</div>`;
+      else if (role === "doctor" && !activeDoctorId) $("appointmentList").innerHTML = `<div class="empty">Randevuları görmek için aktif doktoru seçin.</div>`;
+      else $("appointmentList").innerHTML = $("emptyTemplate").innerHTML;
       return;
     }
     $("appointmentList").innerHTML = list.map(item => {
       const clinic = store.getClinic(item.clinicId);
       const service = store.getService(item.serviceId);
       const doctor = store.getDoctor(item.doctorId);
-      const canManage = role !== "patient" && item.status === D.AppointmentStatus.PENDING;
+      const canManage = (role === "admin" || (role === "doctor" && item.doctorId === activeDoctorId)) && item.status === D.AppointmentStatus.PENDING;
       const canPatientCancel = role === "patient" && item.status !== D.AppointmentStatus.CANCELLED;
       return `<article class="appointment">
         <div><h3>${item.patientName}</h3><p>${service.name} · ${formatMoney(item.fee)}</p></div>
@@ -145,6 +149,7 @@
     if (!button) return;
     try {
       if (button.dataset.action === "PATIENT_CANCEL") appointments.cancelForPatient(button.dataset.id, $("patientName").value);
+      else if ($("roleSelect").value === "doctor") appointments.changeStatusForDoctor(button.dataset.id, button.dataset.action, $("doctorViewSelect").value);
       else appointments.changeStatus(button.dataset.id, button.dataset.action);
       renderStats();
       renderAppointments();
@@ -153,6 +158,7 @@
   });
   $("roleSelect").addEventListener("change", renderRole);
   $("statusFilter").addEventListener("change", renderAppointments);
+  $("doctorViewSelect").addEventListener("change", renderAppointments);
   $("clinicSelect").addEventListener("change", syncServices);
   $("serviceSelect").addEventListener("change", syncDoctors);
   $("doctorSelect").addEventListener("change", syncTimeSlots);

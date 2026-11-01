@@ -88,3 +88,17 @@ test("hasta başka bir hastanın randevusunu iptal edemez", () => {
   assert.throws(() => service.cancelForPatient(item.id, "Mehmet Can"), /yetkiniz yok/);
   assert.equal(item.status, D.AppointmentStatus.PENDING);
 });
+
+test("doktor kendi randevusunu onaylar", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  service.changeStatusForDoctor(item.id, D.AppointmentStatus.APPROVED, "d1");
+  assert.equal(item.status, D.AppointmentStatus.APPROVED);
+});
+
+test("doktor başka bir doktorun randevusunu yönetemez", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  assert.throws(() => service.changeStatusForDoctor(item.id, D.AppointmentStatus.APPROVED, "d2"), /yetkiniz yok/);
+  assert.equal(item.status, D.AppointmentStatus.PENDING);
+});

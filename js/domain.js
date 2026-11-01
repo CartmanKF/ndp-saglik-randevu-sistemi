@@ -166,6 +166,16 @@
       return appointment;
     }
 
+    changeStatusForDoctor(id, status, doctorId) {
+      const appointment = this.store.getAppointment(id);
+      const doctor = this.store.getDoctor(doctorId);
+      if (!appointment) throw new Error("Randevu bulunamadı.");
+      if (!doctor || appointment.doctorId !== doctor.id) {
+        throw new Error("Bu randevunun durumunu değiştirme yetkiniz yok.");
+      }
+      return this.changeStatus(id, status);
+    }
+
     cancelForPatient(id, patientName) {
       const appointment = this.store.getAppointment(id);
       if (!appointment) throw new Error("Randevu bulunamadı.");

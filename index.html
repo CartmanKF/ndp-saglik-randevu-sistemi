@@ -56,14 +56,21 @@
     <section class="panel">
       <div class="section-title">
         <div><p class="eyebrow">Takvim</p><h2>Randevular</h2></div>
-        <label>Durum filtresi
-          <select id="statusFilter">
-            <option value="ALL">Tümü</option>
-            <option value="PENDING">Onay bekliyor</option>
-            <option value="APPROVED">Onaylandı</option>
-            <option value="CANCELLED">İptal edildi</option>
-          </select>
-        </label>
+        <div class="appointment-filters">
+          <label class="doctor-only hidden">Aktif doktor
+            <select id="doctorViewSelect">
+              <option value="">Doktor seçin</option>
+            </select>
+          </label>
+          <label>Durum filtresi
+            <select id="statusFilter">
+              <option value="ALL">Tümü</option>
+              <option value="PENDING">Onay bekliyor</option>
+              <option value="APPROVED">Onaylandı</option>
+              <option value="CANCELLED">İptal edildi</option>
+            </select>
+          </label>
+        </div>
       </div>
       <div id="appointmentList" class="appointment-list"></div>
     </section>
