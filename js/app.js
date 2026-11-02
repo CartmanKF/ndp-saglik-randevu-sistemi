@@ -5,11 +5,17 @@
   const appointments = new D.AppointmentService(store);
   const $ = id => document.getElementById(id);
   const statusLabel = { PENDING: "Onay bekliyor", APPROVED: "Onaylandı", CANCELLED: "İptal edildi" };
+  const historyLabel = { CREATED: "Oluşturuldu", APPROVED: "Onaylandı", CANCELLED: "İptal edildi" };
+  const actorLabel = { PATIENT: "Hasta", DOCTOR: "Doktor", ADMIN: "Klinik yöneticisi" };
 
   function option(value, label) { return `<option value="${value}">${label}</option>`; }
   function formatMoney(value) { return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(value); }
   function formatDate(value) { return new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
   function showMessage(text, kind = "success") { $("formMessage").textContent = text; $("formMessage").className = `message ${kind}`; }
+  function renderHistory(history = []) {
+    if (!history.length) return "<p class=\"history-empty\">Kayıt geçmişi bulunmuyor.</p>";
+    return `<details class="history"><summary>İşlem geçmişi</summary><ul>${history.map(item => `<li><strong>${historyLabel[item.action] || item.action}</strong> · ${actorLabel[item.actor] || item.actor} · ${formatDate(item.at)}</li>`).join("")}</ul></details>`;
+  }
 
   function renderRole() {
     const role = $("roleSelect").value;
@@ -113,6 +119,7 @@
           ${canManage ? `<button class="approve" data-action="APPROVED" data-id="${item.id}">Onayla</button><button class="cancel" data-action="CANCELLED" data-id="${item.id}">İptal</button>` : ""}
           ${canPatientCancel ? `<button class="cancel" data-action="PATIENT_CANCEL" data-id="${item.id}">Randevumu iptal et</button>` : ""}
         </div>
+        <div class="history-column">${renderHistory(item.history)}</div>
       </article>`;
     }).join("");
   }

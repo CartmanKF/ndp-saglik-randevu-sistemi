@@ -60,8 +60,8 @@
   }
 
   class Appointment {
-    constructor({ id, patientName, clinicId, serviceId, doctorId, start, durationMinutes, fee, status = AppointmentStatus.PENDING, createdAt }) {
-      Object.assign(this, { id, patientName, clinicId, serviceId, doctorId, start, durationMinutes, fee, status, createdAt });
+    constructor({ id, patientName, clinicId, serviceId, doctorId, start, durationMinutes, fee, status = AppointmentStatus.PENDING, createdAt, history = [] }) {
+      Object.assign(this, { id, patientName, clinicId, serviceId, doctorId, start, durationMinutes, fee, status, createdAt, history });
     }
 
     get endTime() {
@@ -75,14 +75,20 @@
       return ownStart < requestedEnd && start < this.endTime;
     }
 
-    approve() {
+    approve(actor = "ADMIN", at = new Date().toISOString()) {
       if (this.status !== AppointmentStatus.PENDING) throw new Error("Yalnızca bekleyen randevular onaylanabilir.");
       this.status = AppointmentStatus.APPROVED;
+      this.addHistory(AppointmentStatus.APPROVED, actor, at);
     }
 
-    cancel() {
+    cancel(actor = "ADMIN", at = new Date().toISOString()) {
       if (this.status === AppointmentStatus.CANCELLED) throw new Error("Randevu zaten iptal edilmiş.");
       this.status = AppointmentStatus.CANCELLED;
+      this.addHistory(AppointmentStatus.CANCELLED, actor, at);
+    }
+
+    addHistory(action, actor, at) {
+      this.history.push({ action, actor, at });
     }
   }
 
@@ -150,17 +156,19 @@
       const appointment = new Appointment({
         id: this.store.nextId("appointment"), patientName: normalizedPatientName, clinicId, serviceId, doctorId,
         start: start.toISOString(), durationMinutes: service.durationMinutes, fee: service.fee,
-        createdAt: new Date().toISOString()
+        createdAt: new Date(this.clock()).toISOString(),
+        history: [{ action: "CREATED", actor: "PATIENT", at: new Date(this.clock()).toISOString() }]
       });
       this.store.saveAppointment(appointment);
       return appointment;
     }
 
-    changeStatus(id, status) {
+    changeStatus(id, status, actor = "ADMIN") {
       const appointment = this.store.getAppointment(id);
       if (!appointment) throw new Error("Randevu bulunamadı.");
-      if (status === AppointmentStatus.APPROVED) appointment.approve();
-      else if (status === AppointmentStatus.CANCELLED) appointment.cancel();
+      const at = new Date(this.clock()).toISOString();
+      if (status === AppointmentStatus.APPROVED) appointment.approve(actor, at);
+      else if (status === AppointmentStatus.CANCELLED) appointment.cancel(actor, at);
       else throw new Error("Desteklenmeyen randevu durumu.");
       this.store.updateAppointment(appointment);
       return appointment;
@@ -173,7 +181,7 @@
       if (!doctor || appointment.doctorId !== doctor.id) {
         throw new Error("Bu randevunun durumunu değiştirme yetkiniz yok.");
       }
-      return this.changeStatus(id, status);
+      return this.changeStatus(id, status, "DOCTOR");
     }
 
     cancelForPatient(id, patientName) {
@@ -184,7 +192,7 @@
       if (!requestedName || requestedName !== ownerName) {
         throw new Error("Bu randevuyu iptal etme yetkiniz yok.");
       }
-      appointment.cancel();
+      appointment.cancel("PATIENT", new Date(this.clock()).toISOString());
       this.store.updateAppointment(appointment);
       return appointment;
     }

@@ -4,10 +4,11 @@ const test = require("node:test");
 const D = require("../js/domain.js");
 global.Domain = D;
 const { MemoryStore, seed } = require("../js/storage.js");
+const FIXED_TIME = new Date("2026-10-30T08:00:00.000Z");
 
 function setup() {
   const store = new MemoryStore(seed);
-  const clock = () => new Date("2026-10-30T08:00:00");
+  const clock = () => new Date(FIXED_TIME);
   return { store, service: new D.AppointmentService(store, clock) };
 }
 
@@ -101,4 +102,19 @@ test("doktor başka bir doktorun randevusunu yönetemez", () => {
   const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
   assert.throws(() => service.changeStatusForDoctor(item.id, D.AppointmentStatus.APPROVED, "d2"), /yetkiniz yok/);
   assert.equal(item.status, D.AppointmentStatus.PENDING);
+});
+
+test("randevu işlem geçmişini zaman ve rolle kaydeder", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  service.changeStatusForDoctor(item.id, D.AppointmentStatus.APPROVED, "d1");
+  assert.deepEqual(item.history.map(event => [event.action, event.actor]), [["CREATED", "PATIENT"], ["APPROVED", "DOCTOR"]]);
+  assert.equal(item.history[0].at, FIXED_TIME.toISOString());
+});
+
+test("hasta iptali işlem geçmişine hasta rolüyle eklenir", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  service.cancelForPatient(item.id, "Ayşe Demir");
+  assert.deepEqual(item.history.at(-1), { action: "CANCELLED", actor: "PATIENT", at: FIXED_TIME.toISOString() });
 });

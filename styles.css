@@ -63,6 +63,11 @@ button.danger { color: var(--danger); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { padding: 4px 8px; background: var(--soft); border-radius: 20px; font-size: .78rem; }
 .empty { padding: 30px; color: var(--muted); text-align: center; border: 1px dashed #bdcbc7; border-radius: 12px; }
+.history-column { grid-column: 1 / -1; }
+.history { color: var(--muted); font-size: .82rem; }
+.history summary { width: fit-content; cursor: pointer; font-weight: 700; }
+.history ul { display: grid; gap: 4px; margin: 8px 0 0; padding-left: 18px; }
+.history-empty { margin: 0; color: var(--muted); font-size: .82rem; }
 .hidden { display: none !important; }
 
 @media (max-width: 850px) {
