@@ -3,6 +3,7 @@
   const D = window.Domain;
   const store = new window.StorageLayer.LocalStorageStore();
   const appointments = new D.AppointmentService(store);
+  const management = new D.ClinicManagementService(store);
   const $ = id => document.getElementById(id);
   const statusLabel = { PENDING: "Onay bekliyor", APPROVED: "Onaylandı", CANCELLED: "İptal edildi" };
   const historyLabel = { CREATED: "Oluşturuldu", APPROVED: "Onaylandı", CANCELLED: "İptal edildi" };
@@ -45,6 +46,7 @@
   function renderSelects() {
     $("clinicSelect").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
     $("doctorViewSelect").innerHTML = `<option value="">Doktor seçin</option>` + store.getDoctors().map(x => option(x.id, `${x.name} · ${x.specialty}`)).join("");
+    $("newServiceClinic").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
     syncServices();
   }
 
@@ -136,6 +138,11 @@
     }).join("");
   }
 
+  function showAdminMessage(text, kind = "success") {
+    $("adminMessage").textContent = text;
+    $("adminMessage").className = `message ${kind}`;
+  }
+
   $("appointmentForm").addEventListener("submit", event => {
     event.preventDefault();
     try {
@@ -149,6 +156,33 @@
       renderStats();
       renderAppointments();
     } catch (error) { showMessage(error.message, "error"); }
+  });
+
+  $("clinicForm").addEventListener("submit", event => {
+    event.preventDefault();
+    try {
+      const clinic = management.addClinic({
+        name: $("newClinicName").value, address: $("newClinicAddress").value,
+        workingHours: $("newClinicHours").value, departments: $("newClinicDepartments").value
+      });
+      event.target.reset();
+      renderAll();
+      showAdminMessage(`${clinic.name} kliniği eklendi.`);
+    } catch (error) { showAdminMessage(error.message, "error"); }
+  });
+
+  $("serviceForm").addEventListener("submit", event => {
+    event.preventDefault();
+    try {
+      const service = management.addService({
+        clinicId: $("newServiceClinic").value, name: $("newServiceName").value,
+        department: $("newServiceDepartment").value, durationMinutes: $("newServiceDuration").value,
+        fee: $("newServiceFee").value
+      });
+      event.target.reset();
+      renderAll();
+      showAdminMessage(`${service.name} hizmeti eklendi.`);
+    } catch (error) { showAdminMessage(error.message, "error"); }
   });
 
   $("appointmentList").addEventListener("click", event => {

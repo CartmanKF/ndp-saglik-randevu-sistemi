@@ -34,6 +34,8 @@ main { width: min(1180px, calc(100% - 32px)); margin: 28px auto 60px; }
 .section-title h2, .section-title p { margin-bottom: 0; }
 .appointment-filters { display: flex; align-items: end; gap: 12px; }
 .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: end; }
+.management-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+.compact-form { grid-template-columns: repeat(2, 1fr); align-content: start; padding: 18px; background: var(--soft); border-radius: 12px; }
 label { display: grid; gap: 6px; color: var(--muted); font-size: .84rem; font-weight: 700; }
 input, select { width: 100%; padding: 10px 12px; color: var(--ink); background: white; border: 1px solid #bdcbc7; border-radius: 9px; }
 input:disabled, select:disabled { color: #7d8782; background: #f1f4f3; cursor: not-allowed; }
@@ -71,12 +73,12 @@ button.danger { color: var(--danger); }
 .hidden { display: none !important; }
 
 @media (max-width: 850px) {
-  .stats, .form-grid, .cards { grid-template-columns: repeat(2, 1fr); }
+  .stats, .form-grid, .cards, .management-grid { grid-template-columns: repeat(2, 1fr); }
   .appointment { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) {
   .topbar, .hero, .section-title { align-items: stretch; flex-direction: column; }
   .appointment-filters { align-items: stretch; flex-direction: column; }
-  .stats, .form-grid, .cards, .appointment { grid-template-columns: 1fr; }
+  .stats, .form-grid, .cards, .appointment, .management-grid { grid-template-columns: 1fr; }
   .panel { padding: 18px; }
 }

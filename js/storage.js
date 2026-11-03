@@ -40,6 +40,8 @@
     getAppointments() { return [...this.appointments]; }
     getAppointment(id) { return this.appointments.find(x => x.id === id); }
     nextId(type) { this.counters[type] = (this.counters[type] || 0) + 1; return `${type}-${this.counters[type]}`; }
+    saveClinic(value) { this.clinics.push(value); this.persist(); }
+    saveService(value) { this.services.push(value); this.persist(); }
     saveAppointment(value) { this.appointments.push(value); this.persist(); }
     updateAppointment() { this.persist(); }
     persist() {}

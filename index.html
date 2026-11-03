@@ -84,6 +84,28 @@
       <div class="section-title"><div><p class="eyebrow">Çalışan yönetimi</p><h2>Doktorlar ve uygunluk</h2></div></div>
       <div id="doctorList" class="cards"></div>
     </section>
+
+    <section class="panel admin-only hidden">
+      <div class="section-title"><div><p class="eyebrow">Kurum yönetimi</p><h2>Klinik ve hizmet ekle</h2></div></div>
+      <div class="management-grid">
+        <form id="clinicForm" class="form-grid compact-form">
+          <label>Klinik adı<input id="newClinicName" required placeholder="Örn. Kuzey Sağlık Merkezi"></label>
+          <label>Adres<input id="newClinicAddress" required placeholder="İlçe, şehir"></label>
+          <label>Çalışma saatleri<input id="newClinicHours" required placeholder="08:30 - 18:00"></label>
+          <label>Bölümler<input id="newClinicDepartments" required placeholder="Dahiliye, Kardiyoloji"></label>
+          <button type="submit" class="primary">Klinik ekle</button>
+        </form>
+        <form id="serviceForm" class="form-grid compact-form">
+          <label>Klinik<select id="newServiceClinic" required></select></label>
+          <label>Hizmet adı<input id="newServiceName" required placeholder="Örn. Göz muayenesi"></label>
+          <label>Bölüm<input id="newServiceDepartment" required placeholder="Örn. Göz Hastalıkları"></label>
+          <label>Süre (dk)<input id="newServiceDuration" type="number" min="1" required></label>
+          <label>Ücret (₺)<input id="newServiceFee" type="number" min="0" step="1" required></label>
+          <button type="submit" class="primary">Hizmet ekle</button>
+        </form>
+      </div>
+      <p id="adminMessage" class="message" role="status"></p>
+    </section>
   </main>
 
   <template id="emptyTemplate"><div class="empty">Bu filtreye uygun kayıt bulunamadı.</div></template>

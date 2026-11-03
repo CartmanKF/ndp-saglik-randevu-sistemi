@@ -9,7 +9,7 @@ const FIXED_TIME = new Date("2026-10-30T08:00:00.000Z");
 function setup() {
   const store = new MemoryStore(seed);
   const clock = () => new Date(FIXED_TIME);
-  return { store, service: new D.AppointmentService(store, clock) };
+  return { store, service: new D.AppointmentService(store, clock), management: new D.ClinicManagementService(store) };
 }
 
 test("uygun zaman aralığında randevu oluşturur", () => {
@@ -117,4 +117,23 @@ test("hasta iptali işlem geçmişine hasta rolüyle eklenir", () => {
   const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
   service.cancelForPatient(item.id, "Ayşe Demir");
   assert.deepEqual(item.history.at(-1), { action: "CANCELLED", actor: "PATIENT", at: FIXED_TIME.toISOString() });
+});
+
+test("klinik yöneticisi yeni klinik ekler", () => {
+  const { store, management } = setup();
+  const clinic = management.addClinic({ name: "Kuzey Sağlık Merkezi", address: "Adapazarı, Sakarya", workingHours: "08:00 - 17:00", departments: "Göz Hastalıkları, Dermatoloji" });
+  assert.equal(store.getClinic(clinic.id).name, "Kuzey Sağlık Merkezi");
+  assert.deepEqual(clinic.departments, ["Göz Hastalıkları", "Dermatoloji"]);
+});
+
+test("klinik yöneticisi seçili kliniğe hizmet ekler", () => {
+  const { store, management } = setup();
+  const service = management.addService({ clinicId: "c1", name: "Göz Muayenesi", department: "Göz Hastalıkları", durationMinutes: 20, fee: 800 });
+  assert.equal(store.getService(service.id).clinicId, "c1");
+  assert.equal(service.durationMinutes, 20);
+});
+
+test("hizmet eklerken geçersiz klinik seçimini reddeder", () => {
+  const { management } = setup();
+  assert.throws(() => management.addService({ clinicId: "bilinmeyen", name: "Göz Muayenesi", department: "Göz", durationMinutes: 20, fee: 800 }), /geçerli bir klinik/);
 });

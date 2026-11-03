@@ -14,6 +14,7 @@ Uygulamanın amacı farklı kliniklerde sunulan sağlık hizmetleri için doktor
 - Hasta, adını girerek yalnızca kendi randevularını görüntüleyebilmeli ve aktif kaydını iptal edebilmelidir.
 - Doktor yalnızca kendi çalışma listesini görüntüleyebilmeli ve kendisine ait bekleyen randevuları yönetebilmelidir.
 - Her randevunun oluşturulma, onaylanma ve iptal edilme olayları; zaman ve işlemi yapan rol bilgisiyle saklanmalıdır.
+- Klinik yöneticisi yeni klinik ve hizmet tanımlarını ekrandan ekleyebilmelidir.
 - Sistem doktor takvimi, hizmet süresi ve mevcut randevulara göre uygun saatleri otomatik üretmelidir.
 - Geçmiş tarih ve saatler randevu seçeneği olarak sunulmamalıdır.
 - Aynı doktor için zaman çakışması engellenmelidir.
@@ -58,10 +59,11 @@ classDiagram
 9. Doktor rolüne geçildiğinde aktif doktor seçilir ve yalnızca o doktora ait kayıtlar listelenir.
 10. Doktor kendisine ait bekleyen randevuyu onaylar veya iptal eder; başka doktorların kayıtlarını yönetemez.
 11. Randevu kartından işlem geçmişi açılarak olayların zamanı ve işlemi yapan rol görüntülenir.
+12. Klinik yöneticisi kurum yönetimi alanından klinik ve hizmet ekler; yeni kayıtlar listelerde ve randevu seçimlerinde görünür.
 
 ## 6 Test yaklaşımı
 
-Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, hasta ve doktor yetkilendirmesini, işlem geçmişini, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
+Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, hasta ve doktor yetkilendirmesini, işlem geçmişini, klinik ve hizmet ekleme iş kurallarını, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
 
 ## 7 Geliştirme önerileri
 

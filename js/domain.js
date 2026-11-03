@@ -202,7 +202,47 @@
     }
   }
 
-  const exported = { AppointmentStatus, Clinic, HealthService, Employee, Doctor, Appointment, AppointmentService };
+  class ClinicManagementService {
+    constructor(store) {
+      this.store = store;
+    }
+
+    addClinic({ name, address, workingHours, departments }) {
+      const normalizedName = String(name || "").trim();
+      const normalizedAddress = String(address || "").trim();
+      const normalizedHours = String(workingHours || "").trim();
+      const normalizedDepartments = (Array.isArray(departments) ? departments : String(departments || "").split(","))
+        .map(value => String(value).trim())
+        .filter(Boolean);
+      if (!normalizedName || !normalizedAddress || !normalizedHours || !normalizedDepartments.length) {
+        throw new Error("Klinik adı, adresi, çalışma saatleri ve en az bir bölüm zorunludur.");
+      }
+      const clinic = new Clinic({
+        id: this.store.nextId("clinic"), name: normalizedName, address: normalizedAddress,
+        workingHours: normalizedHours, departments: normalizedDepartments
+      });
+      this.store.saveClinic(clinic);
+      return clinic;
+    }
+
+    addService({ clinicId, name, department, durationMinutes, fee }) {
+      const normalizedName = String(name || "").trim();
+      const normalizedDepartment = String(department || "").trim();
+      const duration = Number(durationMinutes);
+      const serviceFee = Number(fee);
+      if (!this.store.getClinic(clinicId)) throw new Error("Hizmet için geçerli bir klinik seçin.");
+      if (!normalizedName || !normalizedDepartment) throw new Error("Hizmet adı ve bölümü zorunludur.");
+      if (!Number.isFinite(duration) || !Number.isFinite(serviceFee)) throw new Error("Hizmet süresi ve ücreti sayı olmalıdır.");
+      const service = new HealthService({
+        id: this.store.nextId("service"), clinicId, name: normalizedName, department: normalizedDepartment,
+        durationMinutes: duration, fee: serviceFee
+      });
+      this.store.saveService(service);
+      return service;
+    }
+  }
+
+  const exported = { AppointmentStatus, Clinic, HealthService, Employee, Doctor, Appointment, AppointmentService, ClinicManagementService };
   root.Domain = exported;
   if (typeof module !== "undefined" && module.exports) module.exports = exported;
 })(typeof window !== "undefined" ? window : globalThis);
