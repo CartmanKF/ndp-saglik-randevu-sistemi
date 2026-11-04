@@ -137,3 +137,28 @@ test("hizmet eklerken geçersiz klinik seçimini reddeder", () => {
   const { management } = setup();
   assert.throws(() => management.addService({ clinicId: "bilinmeyen", name: "Göz Muayenesi", department: "Göz", durationMinutes: 20, fee: 800 }), /geçerli bir klinik/);
 });
+
+test("klinik yöneticisi doktor ve uygunluk takvimi ekler", () => {
+  const { store, management } = setup();
+  const doctor = management.addDoctor({
+    clinicId: "c2", name: "Dr. Deniz Kaya", specialty: "Genel Muayene", serviceIds: ["s3", "s4"],
+    availability: "1:09:00-12:00,13:00-17:00; 3:09:00-17:00"
+  });
+  assert.equal(store.getDoctor(doctor.id).name, "Dr. Deniz Kaya");
+  assert.deepEqual(doctor.availability["1"], ["09:00-12:00", "13:00-17:00"]);
+  assert.deepEqual(doctor.serviceIds, ["s3", "s4"]);
+});
+
+test("doktor için başka kliniğe ait hizmet seçimini reddeder", () => {
+  const { management } = setup();
+  assert.throws(() => management.addDoctor({
+    clinicId: "c2", name: "Dr. Deniz Kaya", specialty: "Genel Muayene", serviceIds: ["s1"], availability: "1:09:00-17:00"
+  }), /aynı klin/);
+});
+
+test("doktor uygunluk saatinin hatalı biçimini reddeder", () => {
+  const { management } = setup();
+  assert.throws(() => management.addDoctor({
+    clinicId: "c2", name: "Dr. Deniz Kaya", specialty: "Genel Muayene", serviceIds: ["s3"], availability: "Pazartesi 09:00-17:00"
+  }), /0-6/);
+});

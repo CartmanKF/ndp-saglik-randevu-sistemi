@@ -36,6 +36,9 @@ main { width: min(1180px, calc(100% - 32px)); margin: 28px auto 60px; }
 .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: end; }
 .management-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 .compact-form { grid-template-columns: repeat(2, 1fr); align-content: start; padding: 18px; background: var(--soft); border-radius: 12px; }
+.compact-form select[multiple] { min-height: 96px; }
+.compact-form small { color: var(--muted); font-size: .75rem; font-weight: 500; }
+.wide-field { grid-column: 1 / -1; }
 label { display: grid; gap: 6px; color: var(--muted); font-size: .84rem; font-weight: 700; }
 input, select { width: 100%; padding: 10px 12px; color: var(--ink); background: white; border: 1px solid #bdcbc7; border-radius: 9px; }
 input:disabled, select:disabled { color: #7d8782; background: #f1f4f3; cursor: not-allowed; }

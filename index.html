@@ -103,6 +103,20 @@
           <label>Ücret (₺)<input id="newServiceFee" type="number" min="0" step="1" required></label>
           <button type="submit" class="primary">Hizmet ekle</button>
         </form>
+        <form id="doctorForm" class="form-grid compact-form">
+          <label>Klinik<select id="newDoctorClinic" required></select></label>
+          <label>Doktor adı<input id="newDoctorName" required placeholder="Örn. Dr. Deniz Kaya"></label>
+          <label>Uzmanlık<input id="newDoctorSpecialty" required placeholder="Örn. Göz Hastalıkları"></label>
+          <label>Sunduğu hizmetler
+            <select id="newDoctorServices" multiple required aria-describedby="doctorServicesHelp"></select>
+            <small id="doctorServicesHelp">Birden fazla seçim için Ctrl tuşunu kullanın.</small>
+          </label>
+          <label class="wide-field">Uygunluk
+            <input id="newDoctorAvailability" required placeholder="1:09:00-12:00,13:00-17:00; 3:09:00-17:00">
+            <small>0 Pazar, 1 Pazartesi, ... 6 Cumartesi</small>
+          </label>
+          <button type="submit" class="primary">Doktor ekle</button>
+        </form>
       </div>
       <p id="adminMessage" class="message" role="status"></p>
     </section>

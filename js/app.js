@@ -47,7 +47,17 @@
     $("clinicSelect").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
     $("doctorViewSelect").innerHTML = `<option value="">Doktor seçin</option>` + store.getDoctors().map(x => option(x.id, `${x.name} · ${x.specialty}`)).join("");
     $("newServiceClinic").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
+    $("newDoctorClinic").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
+    syncDoctorServices();
     syncServices();
+  }
+
+  function syncDoctorServices() {
+    const clinicId = $("newDoctorClinic").value;
+    const select = $("newDoctorServices");
+    const services = store.getServices().filter(service => service.clinicId === clinicId);
+    select.innerHTML = services.map(service => option(service.id, `${service.name} · ${service.department}`)).join("");
+    select.disabled = !clinicId || !services.length;
   }
 
   function syncServices() {
@@ -185,6 +195,21 @@
     } catch (error) { showAdminMessage(error.message, "error"); }
   });
 
+  $("doctorForm").addEventListener("submit", event => {
+    event.preventDefault();
+    try {
+      const doctor = management.addDoctor({
+        clinicId: $("newDoctorClinic").value, name: $("newDoctorName").value,
+        specialty: $("newDoctorSpecialty").value,
+        serviceIds: Array.from($("newDoctorServices").selectedOptions).map(option => option.value),
+        availability: $("newDoctorAvailability").value
+      });
+      event.target.reset();
+      renderAll();
+      showAdminMessage(`${doctor.name} doktoru eklendi.`);
+    } catch (error) { showAdminMessage(error.message, "error"); }
+  });
+
   $("appointmentList").addEventListener("click", event => {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
@@ -202,6 +227,7 @@
   $("doctorViewSelect").addEventListener("change", renderAppointments);
   $("clinicSelect").addEventListener("change", syncServices);
   $("serviceSelect").addEventListener("change", syncDoctors);
+  $("newDoctorClinic").addEventListener("change", syncDoctorServices);
   $("doctorSelect").addEventListener("change", syncTimeSlots);
   $("dateInput").addEventListener("change", syncTimeSlots);
   $("patientName").addEventListener("input", renderAppointments);

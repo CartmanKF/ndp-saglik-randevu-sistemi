@@ -240,6 +240,47 @@
       this.store.saveService(service);
       return service;
     }
+
+    addDoctor({ clinicId, name, specialty, serviceIds, availability }) {
+      const normalizedName = String(name || "").trim();
+      const normalizedSpecialty = String(specialty || "").trim();
+      const normalizedServiceIds = [...new Set(Array.isArray(serviceIds) ? serviceIds : [])];
+      if (!this.store.getClinic(clinicId)) throw new Error("Doktor için geçerli bir klinik seçin.");
+      if (!normalizedName || !normalizedSpecialty) throw new Error("Doktor adı ve uzmanlığı zorunludur.");
+      if (!normalizedServiceIds.length) throw new Error("Doktorun sunduğu en az bir hizmet seçin.");
+      const hasInvalidService = normalizedServiceIds.some(id => {
+        const service = this.store.getService(id);
+        return !service || service.clinicId !== clinicId;
+      });
+      if (hasInvalidService) throw new Error("Seçilen hizmetlerin tamamı aynı kliniğe ait olmalıdır.");
+      const normalizedAvailability = ClinicManagementService.normalizeAvailability(availability);
+      const doctor = new Doctor({
+        id: this.store.nextId("doctor"), clinicId, name: normalizedName, specialty: normalizedSpecialty,
+        serviceIds: normalizedServiceIds, availability: normalizedAvailability
+      });
+      this.store.saveDoctor(doctor);
+      return doctor;
+    }
+
+    static normalizeAvailability(value) {
+      if (value && typeof value === "object" && !Array.isArray(value)) return value;
+      const availability = {};
+      const entries = String(value || "").split(";").map(entry => entry.trim()).filter(Boolean);
+      entries.forEach(entry => {
+        const separator = entry.indexOf(":");
+        const day = entry.slice(0, separator).trim();
+        const ranges = entry.slice(separator + 1).split(",").map(range => range.trim()).filter(Boolean);
+        if (!/^[0-6]$/.test(day) || !ranges.length) throw new Error("Uygunluk günleri 0-6 ve saat aralıklarıyla tanımlanmalıdır.");
+        ranges.forEach(range => {
+          if (!/^\d{2}:\d{2}-\d{2}:\d{2}$/.test(range)) throw new Error("Saat aralıklarını 09:00-17:00 biçiminde girin.");
+          const [from, to] = range.split("-").map(Doctor.toMinute);
+          if (from >= to || from < 0 || to > 24 * 60) throw new Error("Uygunluk saat aralığı geçerli olmalıdır.");
+        });
+        availability[day] = [...(availability[day] || []), ...ranges];
+      });
+      if (!entries.length) throw new Error("Doktor için en az bir uygunluk günü tanımlayın.");
+      return availability;
+    }
   }
 
   const exported = { AppointmentStatus, Clinic, HealthService, Employee, Doctor, Appointment, AppointmentService, ClinicManagementService };
