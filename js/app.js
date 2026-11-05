@@ -6,8 +6,9 @@
   const management = new D.ClinicManagementService(store);
   const $ = id => document.getElementById(id);
   const statusLabel = { PENDING: "Onay bekliyor", APPROVED: "Onaylandı", CANCELLED: "İptal edildi" };
-  const historyLabel = { CREATED: "Oluşturuldu", APPROVED: "Onaylandı", CANCELLED: "İptal edildi" };
+  const historyLabel = { CREATED: "Oluşturuldu", APPROVED: "Onaylandı", CANCELLED: "İptal edildi", RESCHEDULED: "Yeniden planlandı" };
   const actorLabel = { PATIENT: "Hasta", DOCTOR: "Doktor", ADMIN: "Klinik yöneticisi" };
+  let reschedulingId = null;
 
   function option(value, label) { return `<option value="${value}">${label}</option>`; }
   function formatMoney(value) { return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(value); }
@@ -101,6 +102,51 @@
     }
   }
 
+  function syncRescheduleSlots() {
+    const select = $("rescheduleTime");
+    const appointment = reschedulingId && store.getAppointment(reschedulingId);
+    const date = $("rescheduleDate").value;
+    if (!appointment || !date) {
+      select.innerHTML = `<option value="">Önce tarih seçin</option>`;
+      select.disabled = true;
+      return;
+    }
+    try {
+      const slots = appointments.getAvailableSlots({
+        clinicId: appointment.clinicId, serviceId: appointment.serviceId, doctorId: appointment.doctorId, date,
+        excludeAppointmentId: appointment.id
+      });
+      select.innerHTML = slots.length
+        ? `<option value="">Uygun saat seçin</option>` + slots.map(time => option(time, time)).join("")
+        : `<option value="">Bu tarihte uygun saat bulunamadı</option>`;
+      select.disabled = slots.length === 0;
+    } catch (error) {
+      select.innerHTML = `<option value="">Uygun saatler yüklenemedi</option>`;
+      select.disabled = true;
+      showMessage(error.message, "error");
+    }
+  }
+
+  function openReschedule(id) {
+    const appointment = store.getAppointment(id);
+    if (!appointment) return;
+    reschedulingId = id;
+    const service = store.getService(appointment.serviceId);
+    const doctor = store.getDoctor(appointment.doctorId);
+    $("rescheduleTarget").textContent = `${service.name} · ${doctor.name} · Mevcut: ${formatDate(appointment.start)}`;
+    $("rescheduleDate").value = "";
+    $("rescheduleDate").min = new Date().toLocaleDateString("sv-SE");
+    $("rescheduleForm").classList.remove("hidden");
+    syncRescheduleSlots();
+    $("rescheduleDate").focus();
+  }
+
+  function closeReschedule() {
+    reschedulingId = null;
+    $("rescheduleForm").reset();
+    $("rescheduleForm").classList.add("hidden");
+  }
+
   function renderAppointments() {
     const role = $("roleSelect").value;
     const filter = $("statusFilter").value;
@@ -123,12 +169,14 @@
       const doctor = store.getDoctor(item.doctorId);
       const canManage = (role === "admin" || (role === "doctor" && item.doctorId === activeDoctorId)) && item.status === D.AppointmentStatus.PENDING;
       const canPatientCancel = role === "patient" && item.status !== D.AppointmentStatus.CANCELLED;
+      const canPatientReschedule = role === "patient" && item.status === D.AppointmentStatus.PENDING;
       return `<article class="appointment">
         <div><h3>${item.patientName}</h3><p>${service.name} · ${formatMoney(item.fee)}</p></div>
         <div><strong>${doctor.name}</strong><p>${clinic.name}</p></div>
         <div><span class="badge ${item.status}">${statusLabel[item.status]}</span><p>${formatDate(item.start)} · ${item.durationMinutes} dk</p></div>
         <div class="actions">
           ${canManage ? `<button class="approve" data-action="APPROVED" data-id="${item.id}">Onayla</button><button class="cancel" data-action="CANCELLED" data-id="${item.id}">İptal</button>` : ""}
+          ${canPatientReschedule ? `<button class="ghost" data-action="PATIENT_RESCHEDULE" data-id="${item.id}">Saat değiştir</button>` : ""}
           ${canPatientCancel ? `<button class="cancel" data-action="PATIENT_CANCEL" data-id="${item.id}">Randevumu iptal et</button>` : ""}
         </div>
         <div class="history-column">${renderHistory(item.history)}</div>
@@ -164,6 +212,18 @@
       renderSelects();
       $("dateInput").min = new Date().toLocaleDateString("sv-SE");
       renderStats();
+      renderAppointments();
+    } catch (error) { showMessage(error.message, "error"); }
+  });
+
+  $("rescheduleForm").addEventListener("submit", event => {
+    event.preventDefault();
+    try {
+      appointments.rescheduleForPatient(reschedulingId, $("patientName").value, {
+        date: $("rescheduleDate").value, time: $("rescheduleTime").value
+      });
+      closeReschedule();
+      showMessage("Randevunuz yeni tarih ve saate taşındı.");
       renderAppointments();
     } catch (error) { showMessage(error.message, "error"); }
   });
@@ -214,6 +274,7 @@
     const button = event.target.closest("button[data-action]");
     if (!button) return;
     try {
+      if (button.dataset.action === "PATIENT_RESCHEDULE") { openReschedule(button.dataset.id); return; }
       if (button.dataset.action === "PATIENT_CANCEL") appointments.cancelForPatient(button.dataset.id, $("patientName").value);
       else if ($("roleSelect").value === "doctor") appointments.changeStatusForDoctor(button.dataset.id, button.dataset.action, $("doctorViewSelect").value);
       else appointments.changeStatus(button.dataset.id, button.dataset.action);
@@ -230,6 +291,8 @@
   $("newDoctorClinic").addEventListener("change", syncDoctorServices);
   $("doctorSelect").addEventListener("change", syncTimeSlots);
   $("dateInput").addEventListener("change", syncTimeSlots);
+  $("rescheduleDate").addEventListener("change", syncRescheduleSlots);
+  $("cancelReschedule").addEventListener("click", closeReschedule);
   $("patientName").addEventListener("input", renderAppointments);
   $("resetButton").addEventListener("click", () => { if (confirm("Tüm randevular silinip örnek veriler yüklensin mi?")) { store.reset(); renderAll(); } });
 

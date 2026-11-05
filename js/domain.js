@@ -98,7 +98,7 @@
       this.clock = clock;
     }
 
-    getAvailableSlots({ clinicId, serviceId, doctorId, date }) {
+    getAvailableSlots({ clinicId, serviceId, doctorId, date, excludeAppointmentId = null }) {
       const { service, doctor } = this.resolveSelection(clinicId, serviceId, doctorId);
       const selectedDate = new Date(`${date}T00:00:00`);
       if (!date || Number.isNaN(selectedDate.getTime())) throw new Error("Geçerli bir tarih seçin.");
@@ -112,7 +112,7 @@
         for (let minute = from; minute + service.durationMinutes <= to; minute += 15) {
           const time = AppointmentService.formatMinute(minute);
           const start = new Date(`${date}T${time}:00`);
-          if (start <= now || this.hasConflict(doctorId, start, service.durationMinutes)) continue;
+          if (start <= now || this.hasConflict(doctorId, start, service.durationMinutes, excludeAppointmentId)) continue;
           slots.push(time);
         }
       });
@@ -131,9 +131,9 @@
       return { service, doctor, clinic };
     }
 
-    hasConflict(doctorId, start, durationMinutes) {
+    hasConflict(doctorId, start, durationMinutes, excludeAppointmentId = null) {
       return this.store.getAppointments().some(item =>
-        item.doctorId === doctorId && item.overlaps(start, durationMinutes)
+        item.id !== excludeAppointmentId && item.doctorId === doctorId && item.overlaps(start, durationMinutes)
       );
     }
 
@@ -193,6 +193,33 @@
         throw new Error("Bu randevuyu iptal etme yetkiniz yok.");
       }
       appointment.cancel("PATIENT", new Date(this.clock()).toISOString());
+      this.store.updateAppointment(appointment);
+      return appointment;
+    }
+
+    rescheduleForPatient(id, patientName, { date, time }) {
+      const appointment = this.store.getAppointment(id);
+      if (!appointment) throw new Error("Randevu bulunamadı.");
+      const requestedName = AppointmentService.normalizeName(patientName);
+      const ownerName = AppointmentService.normalizeName(appointment.patientName);
+      if (!requestedName || requestedName !== ownerName) {
+        throw new Error("Bu randevuyu yeniden planlama yetkiniz yok.");
+      }
+      if (appointment.status !== AppointmentStatus.PENDING) {
+        throw new Error("Yalnızca onay bekleyen randevular yeniden planlanabilir.");
+      }
+
+      const { service, doctor } = this.resolveSelection(appointment.clinicId, appointment.serviceId, appointment.doctorId);
+      const start = new Date(`${date}T${time}:00`);
+      if (Number.isNaN(start.getTime())) throw new Error("Geçerli bir tarih ve saat seçin.");
+      if (start <= new Date(this.clock())) throw new Error("Geçmiş bir tarih veya saat için randevu planlanamaz.");
+      if (!doctor.isAvailable(start, service.durationMinutes)) throw new Error("Doktor seçilen zaman aralığında uygun değil.");
+      if (this.hasConflict(appointment.doctorId, start, service.durationMinutes, appointment.id)) {
+        throw new Error("Bu zaman aralığında doktorun başka bir randevusu var.");
+      }
+
+      appointment.start = start.toISOString();
+      appointment.addHistory("RESCHEDULED", "PATIENT", new Date(this.clock()).toISOString());
       this.store.updateAppointment(appointment);
       return appointment;
     }

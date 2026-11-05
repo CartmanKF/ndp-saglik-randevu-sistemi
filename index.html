@@ -51,6 +51,12 @@
         <button type="submit" class="primary">Randevu oluştur</button>
       </form>
       <p id="formMessage" class="message" role="status"></p>
+      <form id="rescheduleForm" class="form-grid compact-form hidden" aria-label="Randevu yeniden planlama">
+        <div class="wide-field"><p class="eyebrow">Randevu güncelleme</p><strong id="rescheduleTarget"></strong></div>
+        <label>Yeni tarih<input id="rescheduleDate" type="date" required></label>
+        <label>Yeni saat<select id="rescheduleTime" required disabled><option value="">Önce tarih seçin</option></select></label>
+        <div class="actions"><button type="submit" class="primary">Yeni saati kaydet</button><button type="button" id="cancelReschedule" class="ghost">Vazgeç</button></div>
+      </form>
     </section>
 
     <section class="panel">

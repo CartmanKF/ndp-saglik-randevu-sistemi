@@ -12,6 +12,7 @@ Uygulamanın amacı farklı kliniklerde sunulan sağlık hizmetleri için doktor
 - Doktorların uzmanlığı, çalıştığı klinik, sunduğu hizmetler ve uygunluk saatleri tanımlanmalıdır.
 - Hasta uygun klinik, hizmet, doktor, tarih ve saat seçerek randevu oluşturabilmelidir.
 - Hasta, adını girerek yalnızca kendi randevularını görüntüleyebilmeli ve aktif kaydını iptal edebilmelidir.
+- Hasta, yalnızca kendi adına kayıtlı bekleyen randevusunu uygun bir tarih ve saate yeniden planlayabilmelidir.
 - Doktor yalnızca kendi çalışma listesini görüntüleyebilmeli ve kendisine ait bekleyen randevuları yönetebilmelidir.
 - Her randevunun oluşturulma, onaylanma ve iptal edilme olayları; zaman ve işlemi yapan rol bilgisiyle saklanmalıdır.
 - Klinik yöneticisi yeni klinik ve hizmet tanımlarını ekrandan ekleyebilmelidir.
@@ -56,7 +57,7 @@ classDiagram
 5. Hizmet süresini aşan, geçmişte kalan veya mevcut kayıtlarla çakışan saatler listeden çıkarılır.
 6. Hasta yalnızca kalan uygun saatlerden birini seçer.
 7. Çakışma yoksa ücret ve süre bilgisiyle bekleyen randevu oluşturulur.
-8. Hasta aynı adla kendi randevularını görüntüleyebilir ve aktif kaydını iptal edebilir.
+8. Hasta aynı adla kendi randevularını görüntüleyebilir; aktif kaydını iptal edebilir veya bekleyen randevusunu uygun yeni bir saate taşıyabilir.
 9. Doktor rolüne geçildiğinde aktif doktor seçilir ve yalnızca o doktora ait kayıtlar listelenir.
 10. Doktor kendisine ait bekleyen randevuyu onaylar veya iptal eder; başka doktorların kayıtlarını yönetemez.
 11. Randevu kartından işlem geçmişi açılarak olayların zamanı ve işlemi yapan rol görüntülenir.
@@ -65,7 +66,7 @@ classDiagram
 
 ## 6 Test yaklaşımı
 
-Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, hasta ve doktor yetkilendirmesini, işlem geçmişini, klinik, hizmet ve doktor ekleme iş kurallarını, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
+Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, hasta ve doktor yetkilendirmesini, yeniden planlamayı, işlem geçmişini, klinik, hizmet ve doktor ekleme iş kurallarını, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
 
 ## 7 Geliştirme önerileri
 

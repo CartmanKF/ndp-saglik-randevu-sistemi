@@ -119,6 +119,28 @@ test("hasta iptali işlem geçmişine hasta rolüyle eklenir", () => {
   assert.deepEqual(item.history.at(-1), { action: "CANCELLED", actor: "PATIENT", at: FIXED_TIME.toISOString() });
 });
 
+test("hasta kendi bekleyen randevusunu uygun bir saate yeniden planlar", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  service.rescheduleForPatient(item.id, "AYŞE DEMİR", { date: "2026-11-02", time: "10:00" });
+  assert.equal(new Date(item.start).getHours(), 10);
+  assert.deepEqual(item.history.at(-1), { action: "RESCHEDULED", actor: "PATIENT", at: FIXED_TIME.toISOString() });
+});
+
+test("hasta başka bir hastanın randevusunu yeniden planlayamaz", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  assert.throws(() => service.rescheduleForPatient(item.id, "Mehmet Can", { date: "2026-11-02", time: "10:00" }), /yetkiniz yok/);
+  assert.equal(new Date(item.start).getHours(), 9);
+});
+
+test("onaylanmış randevu yeniden planlanamaz", () => {
+  const { service } = setup();
+  const item = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  service.changeStatus(item.id, D.AppointmentStatus.APPROVED);
+  assert.throws(() => service.rescheduleForPatient(item.id, "Ayşe Demir", { date: "2026-11-02", time: "10:00" }), /onay bekleyen/);
+});
+
 test("klinik yöneticisi yeni klinik ekler", () => {
   const { store, management } = setup();
   const clinic = management.addClinic({ name: "Kuzey Sağlık Merkezi", address: "Adapazarı, Sakarya", workingHours: "08:00 - 17:00", departments: "Göz Hastalıkları, Dermatoloji" });
