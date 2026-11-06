@@ -26,7 +26,11 @@ main { width: min(1180px, calc(100% - 32px)); margin: 28px auto 60px; }
 .hero { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 26px; }
 .hero p:last-child { margin-bottom: 0; color: var(--muted); }
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 18px 0; }
+.report-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
 .stat { padding: 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+.report-stat { padding: 16px; background: var(--soft); border-radius: 12px; }
+.report-stat strong { display: block; font-size: 1.4rem; }
+.report-stat span { color: var(--muted); font-size: .82rem; }
 .stat strong { display: block; font-size: 1.65rem; }
 .stat span { color: var(--muted); font-size: .86rem; }
 .panel { margin-top: 18px; padding: 24px; }
@@ -34,6 +38,8 @@ main { width: min(1180px, calc(100% - 32px)); margin: 28px auto 60px; }
 .section-title h2, .section-title p { margin-bottom: 0; }
 .appointment-filters { display: flex; align-items: end; gap: 12px; }
 .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: end; }
+.report-filter { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; }
+.report-filter label { min-width: 190px; }
 .management-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 .compact-form { grid-template-columns: repeat(2, 1fr); align-content: start; padding: 18px; background: var(--soft); border-radius: 12px; }
 .compact-form select[multiple] { min-height: 96px; }
@@ -76,12 +82,13 @@ button.danger { color: var(--danger); }
 .hidden { display: none !important; }
 
 @media (max-width: 850px) {
-  .stats, .form-grid, .cards, .management-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats, .report-stats, .form-grid, .cards, .management-grid { grid-template-columns: repeat(2, 1fr); }
   .appointment { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) {
   .topbar, .hero, .section-title { align-items: stretch; flex-direction: column; }
   .appointment-filters { align-items: stretch; flex-direction: column; }
-  .stats, .form-grid, .cards, .appointment, .management-grid { grid-template-columns: 1fr; }
+  .stats, .report-stats, .form-grid, .cards, .appointment, .management-grid { grid-template-columns: 1fr; }
+  .report-filter { align-items: stretch; flex-direction: column; }
   .panel { padding: 18px; }
 }

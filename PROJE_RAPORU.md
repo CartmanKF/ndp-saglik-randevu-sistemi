@@ -17,6 +17,7 @@ Uygulamanın amacı farklı kliniklerde sunulan sağlık hizmetleri için doktor
 - Her randevunun oluşturulma, onaylanma ve iptal edilme olayları; zaman ve işlemi yapan rol bilgisiyle saklanmalıdır.
 - Klinik yöneticisi yeni klinik ve hizmet tanımlarını ekrandan ekleyebilmelidir.
 - Klinik yöneticisi doktorun uzmanlık alanını, sunduğu hizmetleri ve haftalık uygunluğunu ekrandan tanımlayabilmelidir.
+- Klinik yöneticisi tarih aralığı seçerek randevu adetleri ve tahsilat özetini görüntüleyebilmelidir.
 - Sistem doktor takvimi, hizmet süresi ve mevcut randevulara göre uygun saatleri otomatik üretmelidir.
 - Geçmiş tarih ve saatler randevu seçeneği olarak sunulmamalıdır.
 - Aynı doktor için zaman çakışması engellenmelidir.
@@ -63,10 +64,11 @@ classDiagram
 11. Randevu kartından işlem geçmişi açılarak olayların zamanı ve işlemi yapan rol görüntülenir.
 12. Klinik yöneticisi kurum yönetimi alanından klinik ve hizmet ekler; yeni kayıtlar listelerde ve randevu seçimlerinde görünür.
 13. Klinik yöneticisi doktor eklerken kliniği, hizmet kapsamını ve haftalık uygunluğunu tanımlar; hizmetlerin aynı kliniğe ait olduğu doğrulanır.
+14. Klinik yöneticisi tarih aralığına göre toplam, bekleyen, onaylanan ve iptal edilen randevuları; onaylanan ve bekleyen tahsilat tutarlarını görüntüler.
 
 ## 6 Test yaklaşımı
 
-Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, hasta ve doktor yetkilendirmesini, yeniden planlamayı, işlem geçmişini, klinik, hizmet ve doktor ekleme iş kurallarını, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
+Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, hasta ve doktor yetkilendirmesini, yeniden planlamayı, raporlamayı, işlem geçmişini, klinik, hizmet ve doktor ekleme iş kurallarını, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
 
 ## 7 Geliştirme önerileri
 

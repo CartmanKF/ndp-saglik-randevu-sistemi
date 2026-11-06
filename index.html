@@ -82,6 +82,18 @@
     </section>
 
     <section class="panel admin-only hidden">
+      <div class="section-title"><div><p class="eyebrow">Operasyon özeti</p><h2>Randevu raporu</h2></div></div>
+      <form id="reportFilterForm" class="report-filter">
+        <label>Başlangıç tarihi<input id="reportFrom" type="date"></label>
+        <label>Bitiş tarihi<input id="reportTo" type="date"></label>
+        <button type="submit" class="primary">Raporu güncelle</button>
+        <button type="button" id="clearReportFilter" class="ghost">Tarihi temizle</button>
+      </form>
+      <p id="reportMessage" class="message" role="status"></p>
+      <div id="reportStats" class="report-stats" aria-label="Randevu raporu özeti"></div>
+    </section>
+
+    <section class="panel admin-only hidden">
       <div class="section-title"><div><p class="eyebrow">Kurum bilgileri</p><h2>Klinikler ve hizmetler</h2></div></div>
       <div id="clinicList" class="cards"></div>
     </section>

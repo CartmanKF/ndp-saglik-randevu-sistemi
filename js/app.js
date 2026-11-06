@@ -31,6 +31,7 @@
     };
     [$("welcomeTitle").textContent, $("welcomeText").textContent] = texts[role];
     renderAppointments();
+    renderReport();
   }
 
   function renderStats() {
@@ -42,6 +43,27 @@
       [all.filter(x => x.status === D.AppointmentStatus.APPROVED).length, "Onaylı randevu"]
     ];
     $("stats").innerHTML = data.map(([value, label]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
+  }
+
+  function renderReport() {
+    try {
+      const summary = appointments.getOperationalSummary({ from: $("reportFrom").value, to: $("reportTo").value });
+      const data = [
+        [summary.total, "Toplam randevu"],
+        [summary.pending, "Onay bekleyen"],
+        [summary.approved, "Onaylanan"],
+        [summary.cancelled, "İptal edilen"],
+        [formatMoney(summary.approvedRevenue), "Onaylanan tahsilat"],
+        [formatMoney(summary.pendingRevenue), "Bekleyen tahsilat" ]
+      ];
+      $("reportStats").innerHTML = data.map(([value, label]) => `<div class="report-stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
+      $("reportMessage").textContent = "";
+      $("reportMessage").className = "message";
+    } catch (error) {
+      $("reportStats").innerHTML = "";
+      $("reportMessage").textContent = error.message;
+      $("reportMessage").className = "message error";
+    }
   }
 
   function renderSelects() {
@@ -212,6 +234,7 @@
       renderSelects();
       $("dateInput").min = new Date().toLocaleDateString("sv-SE");
       renderStats();
+      renderReport();
       renderAppointments();
     } catch (error) { showMessage(error.message, "error"); }
   });
@@ -270,6 +293,15 @@
     } catch (error) { showAdminMessage(error.message, "error"); }
   });
 
+  $("reportFilterForm").addEventListener("submit", event => {
+    event.preventDefault();
+    renderReport();
+  });
+  $("clearReportFilter").addEventListener("click", () => {
+    $("reportFilterForm").reset();
+    renderReport();
+  });
+
   $("appointmentList").addEventListener("click", event => {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
@@ -279,6 +311,7 @@
       else if ($("roleSelect").value === "doctor") appointments.changeStatusForDoctor(button.dataset.id, button.dataset.action, $("doctorViewSelect").value);
       else appointments.changeStatus(button.dataset.id, button.dataset.action);
       renderStats();
+      renderReport();
       renderAppointments();
     }
     catch (error) { alert(error.message); }
@@ -299,6 +332,7 @@
   function renderAll() {
     $("dateInput").min = new Date().toLocaleDateString("sv-SE");
     renderStats();
+    renderReport();
     renderSelects();
     renderAppointments();
     renderAdminData();

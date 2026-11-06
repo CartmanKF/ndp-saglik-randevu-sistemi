@@ -224,6 +224,32 @@
       return appointment;
     }
 
+    getOperationalSummary({ from = "", to = "" } = {}) {
+      const startDate = from ? new Date(`${from}T00:00:00`) : null;
+      const endDate = to ? new Date(`${to}T23:59:59.999`) : null;
+      if ((startDate && Number.isNaN(startDate.getTime())) || (endDate && Number.isNaN(endDate.getTime()))) {
+        throw new Error("Rapor için geçerli tarihler seçin.");
+      }
+      if (startDate && endDate && startDate > endDate) throw new Error("Başlangıç tarihi bitiş tarihinden sonra olamaz.");
+
+      const items = this.store.getAppointments().filter(item => {
+        const appointmentDate = new Date(item.start);
+        return (!startDate || appointmentDate >= startDate) && (!endDate || appointmentDate <= endDate);
+      });
+      const countByStatus = status => items.filter(item => item.status === status).length;
+      const sumByStatus = status => items
+        .filter(item => item.status === status)
+        .reduce((total, item) => total + Number(item.fee || 0), 0);
+      return {
+        total: items.length,
+        pending: countByStatus(AppointmentStatus.PENDING),
+        approved: countByStatus(AppointmentStatus.APPROVED),
+        cancelled: countByStatus(AppointmentStatus.CANCELLED),
+        approvedRevenue: sumByStatus(AppointmentStatus.APPROVED),
+        pendingRevenue: sumByStatus(AppointmentStatus.PENDING)
+      };
+    }
+
     static normalizeName(value) {
       return String(value || "").trim().toLocaleLowerCase("tr-TR");
     }

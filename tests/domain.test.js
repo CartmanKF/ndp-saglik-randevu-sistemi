@@ -141,6 +141,21 @@ test("onaylanmış randevu yeniden planlanamaz", () => {
   assert.throws(() => service.rescheduleForPatient(item.id, "Ayşe Demir", { date: "2026-11-02", time: "10:00" }), /onay bekleyen/);
 });
 
+test("operasyon özeti randevu durumlarını ve tahsilatları hesaplar", () => {
+  const { service } = setup();
+  const first = service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "09:00" });
+  const second = service.create({ patientName: "Mehmet Can", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-11-02", time: "10:00" });
+  service.changeStatus(first.id, D.AppointmentStatus.APPROVED);
+  service.changeStatus(second.id, D.AppointmentStatus.CANCELLED);
+  const summary = service.getOperationalSummary({ from: "2026-11-02", to: "2026-11-02" });
+  assert.deepEqual(summary, { total: 2, pending: 0, approved: 1, cancelled: 1, approvedRevenue: 750, pendingRevenue: 0 });
+});
+
+test("operasyon özeti ters tarih aralığını reddeder", () => {
+  const { service } = setup();
+  assert.throws(() => service.getOperationalSummary({ from: "2026-11-03", to: "2026-11-02" }), /Başlangıç tarihi/);
+});
+
 test("klinik yöneticisi yeni klinik ekler", () => {
   const { store, management } = setup();
   const clinic = management.addClinic({ name: "Kuzey Sağlık Merkezi", address: "Adapazarı, Sakarya", workingHours: "08:00 - 17:00", departments: "Göz Hastalıkları, Dermatoloji" });

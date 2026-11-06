@@ -24,6 +24,7 @@ Ardından `http://localhost:8000` adresine gidilir.
 - Oluşturma, onay ve iptal adımlarını rol ve zaman bilgisiyle saklayan randevu işlem geçmişi
 - Klinik yöneticisinin ekrandan yeni klinik ve hizmet ekleyebilmesi
 - Klinik yöneticisinin doktor, hizmet kapsamı ve haftalık uygunluk tanımı ekleyebilmesi
+- Klinik yöneticisi için tarih aralığına göre randevu durumu ve tahsilat özeti
 - Doktorun uygunluk aralığı ve randevu çakışması kontrolü
 - Doktor takvimi, hizmet süresi ve mevcut kayıtlar üzerinden otomatik uygun saat seçenekleri
 - Geçmiş tarih ve saatler için randevu oluşturmayı engelleme
@@ -39,7 +40,7 @@ Node.js 18 veya daha yeni bir sürümle:
 npm test
 ```
 
-Testler; randevu oluşturma, uygunluk, otomatik saat üretimi, geçmiş zaman kontrolü, çakışma, hasta ve doktor yetkilendirmesi, yeniden planlama, işlem geçmişi, klinik, hizmet ve doktor yönetimi, iptal sonrası saatin tekrar kullanılması ve onay akışını kapsar.
+Testler; randevu oluşturma, uygunluk, otomatik saat üretimi, geçmiş zaman kontrolü, çakışma, hasta ve doktor yetkilendirmesi, yeniden planlama, raporlama, işlem geçmişi, klinik, hizmet ve doktor yönetimi, iptal sonrası saatin tekrar kullanılması ve onay akışını kapsar.
 
 ## Nesneye dayalı yapı
 
