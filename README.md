@@ -2,7 +2,7 @@
 
 Bu proje Nesneye Dayalı Programlama dersi için hazırlanmış, tarayıcıda çalışan bir hastane ve klinik randevu uygulamasıdır. Ek paket veya veritabanı kurulumu gerektirmez. Kayıtlar tarayıcının `localStorage` alanında tutulur.
 
-## Çalıştırma
+## Çalıştırma:
 
 En kolay yöntem `index.html` dosyasını tarayıcıda açmaktır. İsterseniz klasörde bir yerel sunucu da başlatabilirsiniz:
 
