@@ -100,8 +100,8 @@
 
     getAvailableSlots({ clinicId, serviceId, doctorId, date, excludeAppointmentId = null }) {
       const { service, doctor } = this.resolveSelection(clinicId, serviceId, doctorId);
-      const selectedDate = new Date(`${date}T00:00:00`);
-      if (!date || Number.isNaN(selectedDate.getTime())) throw new Error("Geçerli bir tarih seçin.");
+      const selectedDate = AppointmentService.parseDate(date);
+      if (!selectedDate) throw new Error("Geçerli bir tarih seçin.");
 
       const ranges = doctor.availability[String(selectedDate.getDay())] || [];
       const now = new Date(this.clock());
@@ -111,7 +111,7 @@
         const [from, to] = range.split("-").map(Doctor.toMinute);
         for (let minute = from; minute + service.durationMinutes <= to; minute += 15) {
           const time = AppointmentService.formatMinute(minute);
-          const start = new Date(`${date}T${time}:00`);
+          const start = AppointmentService.parseDateTime(date, time);
           if (start <= now || this.hasConflict(doctorId, start, service.durationMinutes, excludeAppointmentId)) continue;
           slots.push(time);
         }
@@ -147,8 +147,8 @@
       const normalizedPatientName = patientName ? patientName.trim() : "";
       if (normalizedPatientName.length < 3) throw new Error("Hasta adı en az 3 karakter olmalıdır.");
       const { service, doctor } = this.resolveSelection(clinicId, serviceId, doctorId);
-      const start = new Date(`${date}T${time}:00`);
-      if (Number.isNaN(start.getTime())) throw new Error("Geçerli bir tarih ve saat seçin.");
+      const start = AppointmentService.parseDateTime(date, time);
+      if (!start) throw new Error("Geçerli bir tarih ve saat seçin.");
       if (start <= new Date(this.clock())) throw new Error("Geçmiş bir tarih veya saat için randevu oluşturulamaz.");
       if (!doctor.isAvailable(start, service.durationMinutes)) throw new Error("Doktor seçilen zaman aralığında uygun değil.");
       if (this.hasConflict(doctorId, start, service.durationMinutes)) throw new Error("Bu zaman aralığında doktorun başka bir randevusu var.");
@@ -210,8 +210,8 @@
       }
 
       const { service, doctor } = this.resolveSelection(appointment.clinicId, appointment.serviceId, appointment.doctorId);
-      const start = new Date(`${date}T${time}:00`);
-      if (Number.isNaN(start.getTime())) throw new Error("Geçerli bir tarih ve saat seçin.");
+      const start = AppointmentService.parseDateTime(date, time);
+      if (!start) throw new Error("Geçerli bir tarih ve saat seçin.");
       if (start <= new Date(this.clock())) throw new Error("Geçmiş bir tarih veya saat için randevu planlanamaz.");
       if (!doctor.isAvailable(start, service.durationMinutes)) throw new Error("Doktor seçilen zaman aralığında uygun değil.");
       if (this.hasConflict(appointment.doctorId, start, service.durationMinutes, appointment.id)) {
@@ -225,9 +225,9 @@
     }
 
     getOperationalSummary({ from = "", to = "" } = {}) {
-      const startDate = from ? new Date(`${from}T00:00:00`) : null;
-      const endDate = to ? new Date(`${to}T23:59:59.999`) : null;
-      if ((startDate && Number.isNaN(startDate.getTime())) || (endDate && Number.isNaN(endDate.getTime()))) {
+      const startDate = from ? AppointmentService.parseDate(from) : null;
+      const endDate = to ? AppointmentService.parseDate(to, true) : null;
+      if ((from && !startDate) || (to && !endDate)) {
         throw new Error("Rapor için geçerli tarihler seçin.");
       }
       if (startDate && endDate && startDate > endDate) throw new Error("Başlangıç tarihi bitiş tarihinden sonra olamaz.");
@@ -252,6 +252,25 @@
 
     static normalizeName(value) {
       return String(value || "").trim().toLocaleLowerCase("tr-TR");
+    }
+
+    static parseDate(value, endOfDay = false) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+      if (!match) return null;
+      const [, year, month, day] = match.map(Number);
+      const date = new Date(year, month - 1, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0);
+      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+      return date;
+    }
+
+    static parseDateTime(dateValue, timeValue) {
+      const date = AppointmentService.parseDate(dateValue);
+      const match = /^(\d{2}):(\d{2})$/.exec(String(timeValue || ""));
+      if (!date || !match) return null;
+      const [, hour, minute] = match.map(Number);
+      if (hour > 23 || minute > 59) return null;
+      date.setHours(hour, minute, 0, 0);
+      return date;
     }
   }
 
@@ -316,7 +335,11 @@
     }
 
     static normalizeAvailability(value) {
-      if (value && typeof value === "object" && !Array.isArray(value)) return value;
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        value = Object.entries(value)
+          .map(([day, ranges]) => `${day}:${Array.isArray(ranges) ? ranges.join(",") : ""}`)
+          .join(";");
+      }
       const availability = {};
       const entries = String(value || "").split(";").map(entry => entry.trim()).filter(Boolean);
       entries.forEach(entry => {

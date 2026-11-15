@@ -70,6 +70,13 @@ test("geçmiş tarih için randevu oluşturmayı reddeder", () => {
   assert.throws(() => service.create({ patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-10-26", time: "09:00" }), /Geçmiş/);
 });
 
+test("takvimde olmayan tarih ve saatleri reddeder", () => {
+  const { service } = setup();
+  const request = { patientName: "Ayşe Demir", clinicId: "c1", serviceId: "s1", doctorId: "d1" };
+  assert.throws(() => service.create({ ...request, date: "2026-11-31", time: "09:00" }), /Geçerli/);
+  assert.throws(() => service.create({ ...request, date: "2026-11-02", time: "24:00" }), /Geçerli/);
+});
+
 test("geçmiş tarihte uygun saat döndürmez", () => {
   const { service } = setup();
   const slots = service.getAvailableSlots({ clinicId: "c1", serviceId: "s1", doctorId: "d1", date: "2026-10-26" });
@@ -156,6 +163,11 @@ test("operasyon özeti ters tarih aralığını reddeder", () => {
   assert.throws(() => service.getOperationalSummary({ from: "2026-11-03", to: "2026-11-02" }), /Başlangıç tarihi/);
 });
 
+test("operasyon özeti takvimde olmayan tarihi reddeder", () => {
+  const { service } = setup();
+  assert.throws(() => service.getOperationalSummary({ from: "2026-02-30" }), /geçerli tarihler/);
+});
+
 test("klinik yöneticisi yeni klinik ekler", () => {
   const { store, management } = setup();
   const clinic = management.addClinic({ name: "Kuzey Sağlık Merkezi", address: "Adapazarı, Sakarya", workingHours: "08:00 - 17:00", departments: "Göz Hastalıkları, Dermatoloji" });
@@ -197,5 +209,13 @@ test("doktor uygunluk saatinin hatalı biçimini reddeder", () => {
   const { management } = setup();
   assert.throws(() => management.addDoctor({
     clinicId: "c2", name: "Dr. Deniz Kaya", specialty: "Genel Muayene", serviceIds: ["s3"], availability: "Pazartesi 09:00-17:00"
+  }), /0-6/);
+});
+
+test("nesne olarak verilen doktor uygunluğu da doğrulanır", () => {
+  const { management } = setup();
+  assert.throws(() => management.addDoctor({
+    clinicId: "c2", name: "Dr. Deniz Kaya", specialty: "Genel Muayene", serviceIds: ["s3"],
+    availability: { Pazartesi: ["09:00-17:00"] }
   }), /0-6/);
 });

@@ -72,4 +72,4 @@ Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı ra
 
 ## 7 Geliştirme önerileri
 
-Gerçek kullanım için kullanıcı kimlik doğrulaması, sunucu taraflı bir API, ilişkisel veritabanı, doktorun izin günleri, e-posta veya SMS bildirimi ve ödeme modülü eklenebilir. Klinik yöneticisinin ekrandan yeni kurum, hizmet ve çalışan ekleyebileceği formlar da sonraki sürümün kapsamına alınabilir.
+Gerçek kullanım için kullanıcı kimlik doğrulaması, sunucu taraflı bir API, ilişkisel veritabanı, doktorun izin günleri, e-posta veya SMS bildirimi ve ödeme modülü eklenebilir. Ayrıca raporların dışa aktarılması ve doktorların izin günlerinin takvime işlenmesi sonraki sürümün kapsamına alınabilir.
