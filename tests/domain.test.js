@@ -198,6 +198,22 @@ test("klinik yöneticisi doktor ve uygunluk takvimi ekler", () => {
   assert.deepEqual(doctor.serviceIds, ["s3", "s4"]);
 });
 
+test("klinik yöneticisi sağlık personeli ekler", () => {
+  const { store, management } = setup();
+  const personnel = management.addPersonnel({
+    clinicId: "c2", name: "Ece Akın", department: "Laboratuvar", title: "Laboratuvar Teknikeri"
+  });
+  assert.equal(store.getPersonnelMember(personnel.id).name, "Ece Akın");
+  assert.equal(personnel.role, "HEALTH_PERSONNEL");
+});
+
+test("sağlık personeli için geçersiz klinik seçimini reddeder", () => {
+  const { management } = setup();
+  assert.throws(() => management.addPersonnel({
+    clinicId: "bilinmeyen", name: "Ece Akın", department: "Laboratuvar", title: "Tekniker"
+  }), /geçerli bir klinik/);
+});
+
 test("doktor için başka kliniğe ait hizmet seçimini reddeder", () => {
   const { management } = setup();
   assert.throws(() => management.addDoctor({

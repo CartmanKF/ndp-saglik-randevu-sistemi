@@ -16,7 +16,7 @@ Ardından `http://localhost:8000` adresine gidilir.
 
 - Birden fazla klinik ve şube tanımı
 - Klinik çalışma saatleri, bölümler, hizmet süresi ve ücret bilgisi
-- Doktor, uzmanlık, sunduğu hizmetler ve haftalık uygunluk tanımı
+- Doktor ile sağlık personeli kaydı; doktor için uzmanlık, sunduğu hizmetler ve haftalık uygunluk tanımı
 - Hasta, doktor ve klinik yöneticisi rolleri
 - Hasta adına göre kişisel randevu görünümü ve hasta tarafından iptal işlemi
 - Bekleyen randevuyu hasta adına doğrulama, uygunluk ve çakışma denetimleriyle yeniden planlama
@@ -40,11 +40,11 @@ Node.js 18 veya daha yeni bir sürümle:
 npm test
 ```
 
-Testler; randevu oluşturma, uygunluk, otomatik saat üretimi, geçmiş zaman kontrolü, çakışma, hasta ve doktor yetkilendirmesi, yeniden planlama, raporlama, işlem geçmişi, klinik, hizmet ve doktor yönetimi, iptal sonrası saatin tekrar kullanılması ve onay akışını kapsar.
+Testler; randevu oluşturma, uygunluk, otomatik saat üretimi, geçmiş zaman kontrolü, çakışma, hasta ve doktor yetkilendirmesi, yeniden planlama, raporlama, işlem geçmişi, klinik, hizmet, doktor ve sağlık personeli yönetimi, iptal sonrası saatin tekrar kullanılması ve onay akışını kapsar.
 
 ## Nesneye dayalı yapı
 
-`Clinic`, `HealthService`, `Employee`, `Doctor` ve `Appointment` temel alan sınıflarıdır. `Doctor`, `Employee` sınıfından kalıtım alır. Randevu kuralları `AppointmentService` içinde, veri saklama ayrıntıları ise `MemoryStore` ve `LocalStorageStore` sınıflarında tutulur. Bu ayrım kapsülleme ve tek sorumluluk ilkesini destekler.
+`Clinic`, `HealthService`, `Employee`, `Doctor`, `HealthPersonnel` ve `Appointment` temel alan sınıflarıdır. `Doctor` ile `HealthPersonnel`, `Employee` sınıfından kalıtım alır. Randevu kuralları `AppointmentService` içinde, veri saklama ayrıntıları ise `MemoryStore` ve `LocalStorageStore` sınıflarında tutulur. Bu ayrım kapsülleme ve tek sorumluluk ilkesini destekler.
 
 ## Klasör yapısı
 

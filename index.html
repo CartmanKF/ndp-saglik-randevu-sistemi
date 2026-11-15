@@ -99,8 +99,9 @@
     </section>
 
     <section class="panel admin-only hidden">
-      <div class="section-title"><div><p class="eyebrow">Çalışan yönetimi</p><h2>Doktorlar ve uygunluk</h2></div></div>
+      <div class="section-title"><div><p class="eyebrow">Çalışan yönetimi</p><h2>Doktorlar ve sağlık personeli</h2></div></div>
       <div id="doctorList" class="cards"></div>
+      <div id="personnelList" class="cards personnel-list"></div>
     </section>
 
     <section class="panel admin-only hidden">
@@ -135,14 +136,21 @@
           </label>
           <button type="submit" class="primary">Doktor ekle</button>
         </form>
+        <form id="personnelForm" class="form-grid compact-form">
+          <label>Klinik<select id="newPersonnelClinic" required></select></label>
+          <label>Personel adı<input id="newPersonnelName" required placeholder="Örn. Ece Akın"></label>
+          <label>Bölüm<input id="newPersonnelDepartment" required placeholder="Örn. Laboratuvar"></label>
+          <label>Görev<input id="newPersonnelTitle" required placeholder="Örn. Laboratuvar Teknikeri"></label>
+          <button type="submit" class="primary">Sağlık personeli ekle</button>
+        </form>
       </div>
       <p id="adminMessage" class="message" role="status"></p>
     </section>
   </main>
 
   <template id="emptyTemplate"><div class="empty">Bu filtreye uygun kayıt bulunamadı.</div></template>
-  <script src="js/domain.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/domain.js?v=1.1"></script>
+  <script src="js/storage.js?v=1.1"></script>
+  <script src="js/app.js?v=1.1"></script>
 </body>
 </html>

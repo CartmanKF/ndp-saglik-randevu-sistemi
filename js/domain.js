@@ -59,6 +59,20 @@
     }
   }
 
+  class HealthPersonnel extends Employee {
+    constructor({ id, clinicId, name, department, title }) {
+      const normalizedName = String(name || "").trim();
+      const normalizedDepartment = String(department || "").trim();
+      const normalizedTitle = String(title || "").trim();
+      if (!id || !clinicId || !normalizedName || !normalizedDepartment || !normalizedTitle) {
+        throw new Error("Sağlık personeli için klinik, ad, bölüm ve görev zorunludur.");
+      }
+      super({ id, clinicId, name: normalizedName, role: "HEALTH_PERSONNEL" });
+      this.department = normalizedDepartment;
+      this.title = normalizedTitle;
+    }
+  }
+
   class Appointment {
     constructor({ id, patientName, clinicId, serviceId, doctorId, start, durationMinutes, fee, status = AppointmentStatus.PENDING, createdAt, history = [] }) {
       Object.assign(this, { id, patientName, clinicId, serviceId, doctorId, start, durationMinutes, fee, status, createdAt, history });
@@ -334,6 +348,15 @@
       return doctor;
     }
 
+    addPersonnel({ clinicId, name, department, title }) {
+      if (!this.store.getClinic(clinicId)) throw new Error("Sağlık personeli için geçerli bir klinik seçin.");
+      const personnel = new HealthPersonnel({
+        id: this.store.nextId("personnel"), clinicId, name, department, title
+      });
+      this.store.savePersonnel(personnel);
+      return personnel;
+    }
+
     static normalizeAvailability(value) {
       if (value && typeof value === "object" && !Array.isArray(value)) {
         value = Object.entries(value)
@@ -359,7 +382,7 @@
     }
   }
 
-  const exported = { AppointmentStatus, Clinic, HealthService, Employee, Doctor, Appointment, AppointmentService, ClinicManagementService };
+  const exported = { AppointmentStatus, Clinic, HealthService, Employee, Doctor, HealthPersonnel, Appointment, AppointmentService, ClinicManagementService };
   root.Domain = exported;
   if (typeof module !== "undefined" && module.exports) module.exports = exported;
 })(typeof window !== "undefined" ? window : globalThis);

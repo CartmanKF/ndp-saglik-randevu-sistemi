@@ -9,7 +9,7 @@ Uygulamanın amacı farklı kliniklerde sunulan sağlık hizmetleri için doktor
 - Birden fazla klinik veya şube görüntülenebilmelidir.
 - Kliniklerin adresi, çalışma saatleri ve bölümleri tanımlanabilmelidir.
 - Hizmetlerin adı, bölümü, süresi ve ücreti saklanmalıdır.
-- Doktorların uzmanlığı, çalıştığı klinik, sunduğu hizmetler ve uygunluk saatleri tanımlanmalıdır.
+- Doktorların uzmanlığı, çalıştığı klinik, sunduğu hizmetler ve uygunluk saatleri; sağlık personelinin ise görev ve bölüm bilgisi tanımlanmalıdır.
 - Hasta uygun klinik, hizmet, doktor, tarih ve saat seçerek randevu oluşturabilmelidir.
 - Hasta, adını girerek yalnızca kendi randevularını görüntüleyebilmeli ve aktif kaydını iptal edebilmelidir.
 - Hasta, yalnızca kendi adına kayıtlı bekleyen randevusunu uygun bir tarih ve saate yeniden planlayabilmelidir.
@@ -28,8 +28,10 @@ Uygulamanın amacı farklı kliniklerde sunulan sağlık hizmetleri için doktor
 ```mermaid
 classDiagram
   Employee <|-- Doctor
+  Employee <|-- HealthPersonnel
   Clinic "1" --> "*" HealthService
   Clinic "1" --> "*" Doctor
+  Clinic "1" --> "*" HealthPersonnel
   Doctor "1" --> "*" Appointment
   HealthService "1" --> "*" Appointment
   AppointmentService --> Appointment
@@ -37,13 +39,13 @@ classDiagram
   MemoryStore <|-- LocalStorageStore
 ```
 
-`Clinic` kurum bilgisini ve bölümleri, `HealthService` hizmet süresi ile ücretini tutar. `Employee` çalışanların ortak alanlarını içerir. `Doctor` bu sınıftan kalıtım alır ve uzmanlık ile uygunluk davranışını ekler. `Appointment` durum geçişlerini ve çakışma hesabını kapsüller. `AppointmentService` randevu oluşturma iş kurallarını tek yerde toplar.
+`Clinic` kurum bilgisini ve bölümleri, `HealthService` hizmet süresi ile ücretini tutar. `Employee` çalışanların ortak alanlarını içerir. `Doctor` uzmanlık ve uygunluk davranışını, `HealthPersonnel` ise görev ve bölüm bilgisini bu sınıftan kalıtım alarak ekler. `Appointment` durum geçişlerini ve çakışma hesabını kapsüller. `AppointmentService` randevu oluşturma iş kurallarını tek yerde toplar.
 
 ## 4 Nesneye dayalı programlama ilkeleri
 
 **Kapsülleme:** Randevuyu onaylama, iptal etme ve zaman çakışmasını hesaplama işlemleri `Appointment` sınıfının metotlarıdır. Dış kod randevu durumunun nasıl değiştiğini bilmek zorunda değildir.
 
-**Kalıtım:** `Doctor`, çalışanlara ait ortak alanları içeren `Employee` sınıfından türetilmiştir. Böylece ad, rol, klinik ve hizmet bilgileri tekrar edilmez.
+**Kalıtım:** `Doctor` ve `HealthPersonnel`, çalışanlara ait ortak alanları içeren `Employee` sınıfından türetilmiştir. Böylece ad, rol ve klinik bilgileri tekrar edilmez.
 
 **Çok biçimlilik:** `MemoryStore` yalnızca bellekte çalışırken `LocalStorageStore` kalıtım yoluyla aynı arayüzü kullanır ve `persist` davranışını tarayıcı depolamasına göre değiştirir. Randevu servisi hangi veri saklama sınıfının kullanıldığını bilmeden çalışır.
 
@@ -64,11 +66,12 @@ classDiagram
 11. Randevu kartından işlem geçmişi açılarak olayların zamanı ve işlemi yapan rol görüntülenir.
 12. Klinik yöneticisi kurum yönetimi alanından klinik ve hizmet ekler; yeni kayıtlar listelerde ve randevu seçimlerinde görünür.
 13. Klinik yöneticisi doktor eklerken kliniği, hizmet kapsamını ve haftalık uygunluğunu tanımlar; hizmetlerin aynı kliniğe ait olduğu doğrulanır.
-14. Klinik yöneticisi tarih aralığına göre toplam, bekleyen, onaylanan ve iptal edilen randevuları; onaylanan ve bekleyen tahsilat tutarlarını görüntüler.
+14. Klinik yöneticisi sağlık personelinin kliniğini, görevini ve bölümünü tanımlar.
+15. Klinik yöneticisi tarih aralığına göre toplam, bekleyen, onaylanan ve iptal edilen randevuları; onaylanan ve bekleyen tahsilat tutarlarını görüntüler.
 
 ## 6 Test yaklaşımı
 
-Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, hasta ve doktor yetkilendirmesini, yeniden planlamayı, raporlamayı, işlem geçmişini, klinik, hizmet ve doktor ekleme iş kurallarını, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
+Projede Node.js yerleşik test aracı kullanılmıştır. Testler başarılı randevu oluşturmayı, uygun olmayan ve geçmiş zamanların reddedilmesini, uygun saat listesinin üretilmesini, dolu aralıkların listeden çıkarılmasını, aynı zaman aralığındaki çakışmayı, hasta ve doktor yetkilendirmesini, yeniden planlamayı, raporlamayı, işlem geçmişini, klinik, hizmet, doktor ve sağlık personeli ekleme iş kurallarını, iptal edilen saatin yeniden kullanılmasını ve onay durumuna geçişi doğrular. Harici test kütüphanesine ihtiyaç yoktur.
 
 ## 7 Geliştirme önerileri
 

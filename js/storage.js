@@ -18,6 +18,7 @@
       { id: "d2", clinicId: "c1", name: "Dr. Kerem Aydın", specialty: "Kardiyoloji", serviceIds: ["s2"], availability: { "2": ["10:00-16:00"], "4": ["10:00-16:00"] } },
       { id: "d3", clinicId: "c2", name: "Dr. Selin Kaya", specialty: "Pratisyen Hekim", serviceIds: ["s3", "s4"], availability: { "1": ["09:00-17:00"], "2": ["09:00-17:00"], "3": ["09:00-17:00"], "4": ["09:00-17:00"], "5": ["09:00-17:00"] } }
     ],
+    personnel: [],
     appointments: [], counters: { appointment: 0 }
   };
 
@@ -28,6 +29,7 @@
       this.clinics = copy.clinics.map(x => new D.Clinic(x));
       this.services = copy.services.map(x => new D.HealthService(x));
       this.doctors = copy.doctors.map(x => new D.Doctor(x));
+      this.personnel = (copy.personnel || []).map(x => new D.HealthPersonnel(x));
       this.appointments = copy.appointments.map(x => new D.Appointment(x));
       this.counters = copy.counters || { appointment: this.appointments.length };
     }
@@ -37,12 +39,15 @@
     getService(id) { return this.services.find(x => x.id === id); }
     getDoctors() { return [...this.doctors]; }
     getDoctor(id) { return this.doctors.find(x => x.id === id); }
+    getPersonnel() { return [...this.personnel]; }
+    getPersonnelMember(id) { return this.personnel.find(x => x.id === id); }
     getAppointments() { return [...this.appointments]; }
     getAppointment(id) { return this.appointments.find(x => x.id === id); }
     nextId(type) { this.counters[type] = (this.counters[type] || 0) + 1; return `${type}-${this.counters[type]}`; }
     saveClinic(value) { this.clinics.push(value); this.persist(); }
     saveService(value) { this.services.push(value); this.persist(); }
     saveDoctor(value) { this.doctors.push(value); this.persist(); }
+    savePersonnel(value) { this.personnel.push(value); this.persist(); }
     saveAppointment(value) { this.appointments.push(value); this.persist(); }
     updateAppointment() { this.persist(); }
     persist() {}
@@ -57,7 +62,7 @@
     }
     persist() {
       if (!this.key) return;
-      localStorage.setItem(this.key, JSON.stringify({ clinics: this.clinics, services: this.services, doctors: this.doctors, appointments: this.appointments, counters: this.counters }));
+      localStorage.setItem(this.key, JSON.stringify({ clinics: this.clinics, services: this.services, doctors: this.doctors, personnel: this.personnel, appointments: this.appointments, counters: this.counters }));
     }
     reset() { localStorage.removeItem(this.key); this.loadData(seed); this.persist(); }
   }

@@ -71,6 +71,7 @@
     $("doctorViewSelect").innerHTML = `<option value="">Doktor seçin</option>` + store.getDoctors().map(x => option(x.id, `${x.name} · ${x.specialty}`)).join("");
     $("newServiceClinic").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
     $("newDoctorClinic").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
+    $("newPersonnelClinic").innerHTML = `<option value="">Klinik seçin</option>` + store.getClinics().map(x => option(x.id, x.name)).join("");
     syncDoctorServices();
     syncServices();
   }
@@ -216,6 +217,10 @@
       const days = Object.values(doctor.availability).flat().join(", ");
       return `<article class="card"><h3>${doctor.name}</h3><p>${doctor.specialty} · ${clinic.name}</p><div class="chips"><span class="chip">${days}</span>${doctor.serviceIds.map(id => `<span class="chip">${store.getService(id).name}</span>`).join("")}</div></article>`;
     }).join("");
+    $("personnelList").innerHTML = store.getPersonnel().map(person => {
+      const clinic = store.getClinic(person.clinicId);
+      return `<article class="card"><h3>${person.name}</h3><p>${person.title} · ${clinic.name}</p><div class="chips"><span class="chip">${person.department}</span></div></article>`;
+    }).join("") || `<div class="empty">Henüz sağlık personeli kaydı bulunmuyor.</div>`;
   }
 
   function showAdminMessage(text, kind = "success") {
@@ -290,6 +295,19 @@
       event.target.reset();
       renderAll();
       showAdminMessage(`${doctor.name} doktoru eklendi.`);
+    } catch (error) { showAdminMessage(error.message, "error"); }
+  });
+
+  $("personnelForm").addEventListener("submit", event => {
+    event.preventDefault();
+    try {
+      const personnel = management.addPersonnel({
+        clinicId: $("newPersonnelClinic").value, name: $("newPersonnelName").value,
+        department: $("newPersonnelDepartment").value, title: $("newPersonnelTitle").value
+      });
+      event.target.reset();
+      renderAll();
+      showAdminMessage(`${personnel.name} sağlık personeli olarak eklendi.`);
     } catch (error) { showAdminMessage(error.message, "error"); }
   });
 

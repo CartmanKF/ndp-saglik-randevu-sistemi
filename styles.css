@@ -69,6 +69,7 @@ button.danger { color: var(--danger); }
 .APPROVED { color: var(--brand-dark); background: #dff3ee; }
 .CANCELLED { color: var(--danger); background: #fde5e5; }
 .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.personnel-list { margin-top: 14px; }
 .card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; }
 .card p { margin-bottom: 8px; color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
